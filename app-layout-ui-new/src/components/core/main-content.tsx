@@ -3,8 +3,18 @@
 import React from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "../../lib/utils";
-import { SettingsPanel, SettingsPanelTrigger, useSettingsPanel } from "./settings-panel";
+import { SettingsPanelTrigger, useSettingsPanel } from "./settings-panel";
+import { useSidebar } from "../ui/sidebar";
 import { MainContentProps } from "../../types";
+
+/**
+ * This component can be used in two ways:
+ * 1. Directly as a standalone component
+ * 2. As a child of AppLayout - in this case, AppLayout will extract its props
+ *    and render it properly without nesting ScrollAreas
+ * 
+ * When used as a child of AppLayout, height and width constraints are managed by AppLayout.
+ */
 
 // Memoized header component for better performance
 const MainContentHeader = React.memo(function MainContentHeader({
@@ -12,7 +22,7 @@ const MainContentHeader = React.memo(function MainContentHeader({
   showSettingsPanelTrigger,
   headerClassName,
 }: {
-  header?: React.ReactNode;
+  header?: React.ReactNode | string;
   showSettingsPanelTrigger?: boolean;
   headerClassName?: string;
 }) {
@@ -43,9 +53,7 @@ const MainContentHeader = React.memo(function MainContentHeader({
 // MainContent component
 export const MainContent = React.memo(function MainContent({
   children,
-  showSettingsPanel = true,
   backgroundClassName = "bg-content dark:bg-content-dark",
-  settingsPanelContent,
   header,
   showSettingsPanelTrigger = true,
   headerClassName,
@@ -54,42 +62,58 @@ export const MainContent = React.memo(function MainContent({
     state: settingsPanelState, 
     isMobile: isSettingsMobile,
   } = useSettingsPanel();
+  const { 
+    state: sidebarState,
+    isMobile: isSidebarMobile
+  } = useSidebar();
+  
   const settingsIsCollapsed = settingsPanelState === "collapsed";
+  const sidebarIsCollapsed = sidebarState === "collapsed";
+  
+  // Check if this component is a direct child of AppLayout
+  // This is determined at runtime by AppLayout
+  const isAppLayoutChild = false; // This will be overridden by AppLayout's logic
+  
+  // Create style based on sidebar state to match the animations
+  const contentStyle = React.useMemo(() => {
+    // Simple style that lets parent container handle the spacing
+    return {
+      width: '100%',
+      flex: '1 1 auto',
+      height: '100%'
+    };
+  }, []);
   
   return (
-    <div className="flex h-[calc(100vh-4rem)] p-2 md:p-2 lg:p-2 md:rounded-s-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg transition-all ease-in-out duration-300 overflow-hidden">
-      <div className={cn(
-        "flex-1 w-full h-full transition-all ease-in-out duration-300 overflow-hidden",
+    <div
+      className={cn(
+        "flex-1 w-full h-full overflow-hidden ",
         // Rounded corners for sidebar edge
         "md:rounded-s-[inherit]",
         // Rounded corners for settings panel edge (only when NOT mobile)
-        !isSettingsMobile && showSettingsPanel && settingsIsCollapsed 
+        !isSettingsMobile && settingsIsCollapsed 
           ? "min-[1024px]:rounded-e-lg" 
           : "min-[1024px]:rounded-e-3xl",
         backgroundClassName
-      )}>
-        <ScrollArea 
-          id="main-content-area" 
-          className="h-full w-full"
-        >
+      )}
+      style={contentStyle}
+    >
+      <ScrollArea 
+        id="main-content-area" 
+        className="h-full w-full m-4"
+      >
+        {/* Only render header if provided or settings panel trigger is enabled */}
+        {(header || showSettingsPanelTrigger) && (
           <MainContentHeader 
             header={header}
             showSettingsPanelTrigger={showSettingsPanelTrigger}
             headerClassName={headerClassName}
           />
-          <div className="px-4">
-            {children}
-          </div>
-        </ScrollArea>
-      </div>
-      {/* Show settings panel in desktop view */}
-      {!isSettingsMobile && showSettingsPanel && (
-        <SettingsPanel content={settingsPanelContent} />
-      )}
-      {/* For mobile view, always render the Settings Panel */}
-      {isSettingsMobile && showSettingsPanel && (
-        <SettingsPanel content={settingsPanelContent} />
-      )}
+        )}
+        <div className={cn(!header && !showSettingsPanelTrigger ? "pt-4" : "")}>
+          {children}
+        </div>
+      </ScrollArea>
     </div>
   );
 });

@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
 import { 
   SidebarGroup, 
-  SidebarGroupContent, 
   SidebarGroupLabel 
 } from "../ui/sidebar";
 import { Icon } from "./icon";
@@ -83,23 +83,47 @@ export const SidebarSection = React.memo(function SidebarSection({
         aria-controls={sectionId}
       >
         <span>{title}</span>
-        <Icon 
-          name={isOpen ? "arrowDown" : "arrowRight"}
-          className="text-sidebar-foreground/50" 
-          size={16} 
-          aria-hidden="true" 
-        />
+        <motion.div
+          initial={false}
+          animate={{ rotate: isOpen ? 90 : 0 }}
+          transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
+        >
+          <Icon 
+            name="arrowRight"
+            className="text-sidebar-foreground/50" 
+            size={16} 
+            aria-hidden="true" 
+          />
+        </motion.div>
       </SidebarGroupLabel>
-      <SidebarGroupContent 
-        id={sectionId}
-        className={cn(
-          "px-2 transition-all duration-300 ease-in-out overflow-hidden", 
-          isOpen ? "max-h-96" : "max-h-0 opacity-0 pointer-events-none"
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            id={sectionId}
+            className="px-2 overflow-hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ 
+              height: "auto", 
+              opacity: 1,
+              transition: {
+                height: { duration: 0.3, type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.3 }
+              }
+            }}
+            exit={{ 
+              height: 0, 
+              opacity: 0,
+              transition: {
+                height: { duration: 0.3, type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.15 }
+              }
+            }}
+            aria-hidden={!isOpen}
+          >
+            {children}
+          </motion.div>
         )}
-        aria-hidden={!isOpen}
-      >
-        {children}
-      </SidebarGroupContent>
+      </AnimatePresence>
     </SidebarGroup>
   );
 });

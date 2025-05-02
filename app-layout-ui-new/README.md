@@ -67,6 +67,10 @@ The package uses CSS variables for theming. You can override the default theme b
 
 ## Usage
 
+The component can be used in two ways: the simple way (passing all props to AppLayout) and the advanced way (using MainContent directly for more control).
+
+### Basic Usage
+
 ```jsx
 import { AppLayout } from 'app-layout-ui';
 
@@ -124,12 +128,61 @@ function MyApp() {
       teams={teams}
       sidebarNavItems={sidebarNavItems}
       showSettingsPanel={true}
+      contentHeader="Dashboard"
       onLogoClick={() => console.log("Logo clicked")}
     >
       <div className="p-6">
         <h1>My Application Content</h1>
         {/* Your app content here */}
       </div>
+    </AppLayout>
+  );
+}
+```
+
+### Advanced Usage with MainContent
+
+For more control over the content area, you can use the MainContent component directly:
+
+```jsx
+import { AppLayout, MainContent } from 'app-layout-ui';
+
+function AdvancedApp() {
+  // Config as above...
+
+  // Custom header with advanced layout
+  const customHeader = (
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-2">
+        <span className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+          A
+        </span>
+        <h1 className="text-xl font-semibold">Custom Header</h1>
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm">Share</button>
+        <button className="px-2 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm">Save</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <AppLayout
+      siteInfo={siteInfo}
+      teams={teams}
+      sidebarNavItems={sidebarNavItems}
+    >
+      <MainContent
+        header={customHeader}
+        showSettingsPanelTrigger={true}
+        settingsPanelContent={settingsPanelContent}
+        backgroundClassName="bg-gray-50 dark:bg-gray-900"
+      >
+        <div className="p-6">
+          <h1>Advanced Layout Example</h1>
+          {/* Your app content here */}
+        </div>
+      </MainContent>
     </AppLayout>
   );
 }
@@ -158,6 +211,40 @@ function MyApp() {
 | `theme` | `ThemeConfig` | `undefined` | Theme configuration object for custom styling |
 
 ### Component API
+
+#### MainContent
+
+A component for customizing the main content area with advanced options:
+
+```jsx
+import { AppLayout, MainContent } from 'app-layout-ui';
+
+function MyApp() {
+  return (
+    <AppLayout siteInfo={siteInfo} teams={teams} sidebarNavItems={sidebarNavItems}>
+      <MainContent
+        header="Custom Dashboard"
+        showSettingsPanelTrigger={true}
+        settingsPanelContent={<MySettingsPanel />}
+        backgroundClassName="bg-gray-50 dark:bg-gray-900"
+        headerClassName="border-b pb-2"
+      >
+        {/* Your content */}
+      </MainContent>
+    </AppLayout>
+  );
+}
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `React.ReactNode` | Required | The content to display in the main area |
+| `showSettingsPanel` | `boolean` | `true` | Whether to show the settings panel |
+| `backgroundClassName` | `string` | `"bg-content dark:bg-content-dark"` | Custom background class for the content area |
+| `settingsPanelContent` | `React.ReactNode` | `undefined` | Custom content for the settings panel |
+| `header` | `React.ReactNode \| string` | `undefined` | Header content or title string |
+| `showSettingsPanelTrigger` | `boolean` | `true` | Whether to show the settings panel trigger in header |
+| `headerClassName` | `string` | `undefined` | Custom class name for the header |
 
 #### AppLayoutWithState
 

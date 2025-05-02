@@ -1,9 +1,10 @@
 "use client";
 
 import { useIsMobile } from "../../hooks/use-mobile";
+import { useMaxWidth } from "../../hooks/use-media-query";
 import { RiQuillPenAiLine, RiSettingsLine, RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react";
 import { Button } from "../ui/button";
-
+import { motion, AnimatePresence } from "framer-motion";
 import { Sheet, SheetTitle, SheetContent } from "../ui/sheet";
 import * as React from "react";
 import { ScrollArea } from "../ui/scroll-area";
@@ -24,6 +25,7 @@ export interface SettingsPanelContext {
   openMobile: boolean;
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
+  isMidWidth: boolean;
   togglePanel: () => void;
 }
 
@@ -47,6 +49,8 @@ export interface SettingsPanelProviderProps {
   onOpenChange?: (open: boolean) => void;
   children: React.ReactNode;
   mobileBreakpoint?: number;
+  midWidthMin?: number;
+  midWidthMax?: number;
 }
 
 export function SettingsPanelProvider({ 
@@ -54,15 +58,26 @@ export function SettingsPanelProvider({
   open: openProp,
   onOpenChange: setOpenProp,
   children,
-  mobileBreakpoint = 1024 // Allow customization of mobile breakpoint
+  mobileBreakpoint = 1000, // Mobile breakpoint
+  midWidthMin = 1000,      // Min width for mid-sized screens
+  midWidthMax = 1170       // Max width for mid-sized screens
 }: SettingsPanelProviderProps) {
-  // Use the provided mobile breakpoint
+  // Use the provided breakpoints
   const isMobile = useIsMobile(mobileBreakpoint);
+  const isMidWidth = useMaxWidth(midWidthMax);
   const [openMobile, setOpenMobile] = React.useState(false);
   
   // This is the internal state of the panel
   // We use openProp and setOpenProp for control from outside the component
   const [_open, _setOpen] = React.useState(defaultOpen);
+  
+  // Auto-collapse settings panel for mid-width screens
+  React.useEffect(() => {
+    if (isMidWidth && !isMobile && _open) {
+      _setOpen(false);
+    }
+  }, [isMidWidth, isMobile, _open]);
+  
   const open = openProp ?? _open;
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
@@ -83,8 +98,13 @@ export function SettingsPanelProvider({
 
   // Helper to toggle the panel
   const togglePanel = React.useCallback(() => {
+    // If we're in mid-width, don't allow opening the panel
+    if (isMidWidth && !isMobile) {
+      setOpen(false);
+      return;
+    }
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
-  }, [isMobile, setOpen, setOpenMobile]);
+  }, [isMobile, isMidWidth, setOpen, setOpenMobile]);
 
   // Adds a keyboard shortcut to toggle the panel
   React.useEffect(() => {
@@ -113,11 +133,12 @@ export function SettingsPanelProvider({
       open,
       setOpen,
       isMobile,
+      isMidWidth,
       openMobile,
       setOpenMobile,
       togglePanel,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, togglePanel],
+    [state, open, setOpen, isMobile, isMidWidth, openMobile, setOpenMobile, togglePanel],
   );
 
   return (
@@ -223,7 +244,7 @@ export interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ content, className }: SettingsPanelProps) {
-  const { isMobile, openMobile, setOpenMobile, open } = useSettingsPanel();
+  const { isMobile, isMidWidth, openMobile, setOpenMobile, open } = useSettingsPanel();
 
   // Mobile breakpoint - use Sheet component
   if (isMobile) {
@@ -242,21 +263,41 @@ export function SettingsPanel({ content, className }: SettingsPanelProps) {
   // Desktop breakpoint - use inline panel that shrinks main content
   return (
     <div className="relative flex h-full">
-      <div 
+      <motion.div 
+        initial={{ width: open ? 300 : 0 }}
+        animate={{ 
+          width: open ? 300 : 0,
+          opacity: open ? 1 : 0
+        }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 350, 
+          damping: 30,
+          opacity: { duration: 0.2 }
+        }}
         className={cn(
-          "transition-all duration-300 ease-in-out overflow-hidden bg-sidebar h-full rounded-tr-3xl rounded-br-3xl",
-          open ? "w-[300px]" : "w-0",
+          "overflow-hidden bg-sidebar h-full rounded-tr-3xl rounded-br-3xl",
           className
         )}
       >
-        {open && (
-          <ScrollArea className="h-full">
-            <div className="w-[300px] px-4 md:px-6">
-              <SettingsPanelContent content={content} />
-            </div>
-          </ScrollArea>
-        )}
-      </div>
+        <AnimatePresence>
+          {open && (
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              <ScrollArea className="h-full">
+                <div className="w-[300px] px-4 md:px-6">
+                  <SettingsPanelContent content={content} />
+                </div>
+              </ScrollArea>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
       {/* Removed expand button since we're using the combined settings button + chevron */}
     </div>
   );
@@ -294,7 +335,7 @@ export function SettingsPanelTrigger({
   className,
   ...props
 }: SettingsPanelTriggerProps) {
-  const { togglePanel, state, isMobile, setOpenMobile } = useSettingsPanel();
+  const { togglePanel, state, isMobile, isMidWidth, setOpenMobile } = useSettingsPanel();
   const isExpanded = state === "expanded";
 
   // Handle click differently for mobile and desktop
@@ -313,8 +354,13 @@ export function SettingsPanelTrigger({
   return (
     <Button
       variant="ghost"
-      className={cn("flex gap-1.5 items-center px-2", className)}
+      className={cn(
+        "flex gap-1.5 items-center px-2", 
+        isMidWidth && !isMobile ? "cursor-not-allowed opacity-50" : "",
+        className
+      )}
       onClick={handleClick}
+      disabled={isMidWidth && !isMobile}
       {...props}
     >
       <RiSettingsLine
@@ -326,17 +372,17 @@ export function SettingsPanelTrigger({
       
       {/* Show chevron only in desktop view based on panel state */}
       {!isMobile && (
-        isExpanded ? (
+        <motion.div
+          initial={{ rotate: isExpanded ? 0 : 180 }}
+          animate={{ rotate: isExpanded ? 0 : 180 }}
+          transition={{ duration: 0.3 }}
+          className="flex items-center justify-center"
+        >
           <RiArrowLeftSLine 
             className="text-muted-foreground/70 size-4 -mr-1" 
             aria-hidden="true"
           />
-        ) : (
-          <RiArrowRightSLine 
-            className="text-muted-foreground/70 size-4 -mr-1" 
-            aria-hidden="true"
-          />
-        )
+        </motion.div>
       )}
     </Button>
   );

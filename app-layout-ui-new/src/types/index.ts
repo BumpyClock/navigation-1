@@ -58,14 +58,8 @@ export interface MainContentProps {
   /** Main content to be displayed */
   children: React.ReactNode;
   
-  /** Whether to show the settings panel */
-  showSettingsPanel?: boolean;
-  
   /** CSS class for the content background */
   backgroundClassName?: string;
-  
-  /** Content to display in the settings panel */
-  settingsPanelContent?: React.ReactNode;
   
   /** Optional header title (string) or custom component */
   header?: React.ReactNode;

@@ -137,9 +137,9 @@ export default function NewLayoutTestPage() {
           backgroundClassName="bg-white dark:bg-gray-950"
           settingsPanelContent={settingsPanelContent}
           onLogoClick={() => console.log("Logo clicked")}
+          contentHeader="Enhanced Layout Component Test"
         >
           <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Enhanced Layout Component Test</h1>
             <p className="mb-4">This page demonstrates the updated AppLayout component with new features.</p>
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
               <h2 className="text-lg font-medium mb-2">Latest Updates</h2>
@@ -200,6 +200,7 @@ const sidebarNavItems = {
   teams={teams}
   sidebarNavItems={sidebarNavItems}
   onLogoClick={() => console.log("Logo clicked")}
+  contentHeader="Page Title" // Simple string header example
   // ... other props
 />`}
               </pre>

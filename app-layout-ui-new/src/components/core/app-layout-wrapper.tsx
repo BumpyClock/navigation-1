@@ -29,7 +29,7 @@ export function AppLayoutWithState(props: AppLayoutProps) {
   const initialState = {
     sidebarOpen: true,
     settingsPanelOpen: defaultSettingsPanelOpen,
-    theme: 'system',
+    theme: 'system' as const,
     activeTeam: teams && teams.length > 0 ? teams[0] : null
   };
   

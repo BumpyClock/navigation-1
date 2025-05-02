@@ -1,5 +1,6 @@
 "use client"
 import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   RiChat1Line,
   RiBardLine,
@@ -29,6 +30,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "../ui/sidebar";
 
 import { SidebarLogo } from "./sidebar-logo";
@@ -130,43 +132,58 @@ export function AppSidebar({
     );
   }
   
+  // Get sidebar state
+  const { state: sidebarState, open: sidebarOpen } = useSidebar();
+
   // Helper function to render navigation items
   const renderNavItems = (items: NavItem[], isSecondary = false) => {
-    return items.map((item) => {
+    return items.map((item, index) => {
       // Get the icon component from the map using the string identifier
       const IconComponent = item.icon ? iconMap[item.icon] : undefined;
       
       return (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton
-            asChild
-            className={`group/menu-button font-medium gap-3 h-9 rounded-md ${!isSecondary ? 'data-[active=true]:hover:bg-transparent data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)]' : ''} [&>svg]:size-auto`}
-            isActive={item.isActive}
-          >
-            <a 
-              href={item.url}
-              onClick={(e) => {
-                if (onNavItemClick) {
-                  e.preventDefault();
-                  onNavItemClick(item as NavGroup);
-                }
-              }}
-              role="menuitem"
-              aria-current={item.isActive ? "page" : undefined}
-              className="sidebar-nav-link focus-link"
-              tabIndex={0}
+        <div
+          key={item.title}
+        >
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className={`group/menu-button font-medium gap-3 h-9 rounded-md ${!isSecondary ? 'data-[active=true]:hover:bg-transparent data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)]' : ''} [&>svg]:size-auto`}
+              isActive={item.isActive}
             >
-              {IconComponent && (
-                <IconComponent
-                  className="text-sidebar-foreground/50 group-data-[active=true]/menu-button:text-sidebar-primary-icon"
-                  size={22}
-                  aria-hidden="true"
-                />
-              )}
-              <span>{item.title}</span>
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onNavItemClick) {
+                    onNavItemClick(item as NavGroup);
+                  } else if (item.url) {
+                    window.location.href = item.url;
+                  }
+                }}
+                role="menuitem"
+                className="flex w-full items-center gap-2 text-left focus:outline-none sidebar-nav-link focus-link"
+                aria-current={item.isActive ? "page" : undefined}
+                tabIndex={0}
+              >
+                {IconComponent && (
+                  <div
+                  >
+                    <IconComponent
+                      className="text-sidebar-foreground/50 group-data-[active=true]/menu-button:text-sidebar-primary-icon"
+                      size={22}
+                      aria-hidden="true"
+                    />
+                  </div>
+                )}
+                <span
+                >
+                  {item.title}
+                </span>
+              </button>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </div>
       );
     });
   };

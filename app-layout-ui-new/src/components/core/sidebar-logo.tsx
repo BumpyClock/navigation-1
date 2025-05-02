@@ -68,11 +68,14 @@ export const SidebarLogo = React.memo(function SidebarLogo({
         role: "button",
         tabIndex: 0,
         onKeyDown: handleKeyDown,
-        onClick,
+        onClick: (e: React.MouseEvent) => {
+          e.preventDefault(); // Prevent default behavior
+          onClick();
+        },
         "aria-label": title ? `Go to ${title}` : "Go to homepage",
         "data-sidebar": "logo-button",
         className: cn(
-          "flex items-center gap-3 px-3 py-4 cursor-pointer sidebar-logo", 
+          "flex items-center gap-3 px-3 py-4 cursor-pointer sidebar-logo transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]", 
           className
         )
       }
@@ -84,7 +87,9 @@ export const SidebarLogo = React.memo(function SidebarLogo({
     <div {...logoContainerProps}>
       {logo && (
         <div className="flex shrink-0 items-center justify-center">
-          <div className="flex aspect-square size-9 items-center justify-center overflow-hidden rounded-md bg-sidebar-primary text-sidebar-primary-foreground relative after:rounded-[inherit] after:absolute after:inset-0 after:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] after:pointer-events-none">
+          <div 
+            className="flex aspect-square size-9 items-center justify-center overflow-hidden rounded-md bg-sidebar-primary text-sidebar-primary-foreground relative after:rounded-[inherit] after:absolute after:inset-0 after:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] after:pointer-events-none transition-transform duration-200 hover:scale-105 active:scale-95"
+          >
             <img
               src={logo}
               alt={title || "Logo"}
@@ -98,12 +103,16 @@ export const SidebarLogo = React.memo(function SidebarLogo({
       {(title || subtitle) && (
         <div className="grid flex-1 text-left overflow-hidden">
           {title && (
-            <span className="truncate text-base font-semibold text-sidebar-foreground">
+            <span 
+              className="truncate text-base font-semibold text-sidebar-foreground transition-opacity duration-300"
+            >
               {title}
             </span>
           )}
           {subtitle && (
-            <span className="truncate text-xs text-sidebar-foreground/60">
+            <span 
+              className="truncate text-xs text-sidebar-foreground/60 transition-opacity duration-300"
+            >
               {subtitle}
             </span>
           )}

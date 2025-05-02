@@ -9,10 +9,11 @@ import {
 } from "../ui/sidebar";
 import { UserDropdown } from "./user-dropdown";
 import {
-  SettingsPanelProvider,
+  SettingsPanel, SettingsPanelProvider, SettingsPanelTrigger,
 } from "./settings-panel";
+import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "../../lib/utils";
-import { NavGroup, NavItem, SidebarData, SiteInfo, Team, ThemeConfig } from "../../types";
+import { MainContentProps, NavGroup, NavItem, SidebarData, SiteInfo, Team, ThemeConfig } from "../../types";
 import { ErrorBoundary } from "./error-boundary";
 import { validateTheme, applyThemeToDocument } from "../../lib/theme-utils";
 import { AppLayoutStateProvider, useAppLayoutState, useActiveTeam } from "../../lib/state";
@@ -207,7 +208,7 @@ export function AppLayout({
   return (
     <div className="app-layout-ui">
       <ErrorBoundary>
-        <SidebarProvider mobileBreakpoint={mobileBreakpoint}>
+        <SidebarProvider mobileBreakpoint={mobileBreakpoint} style={{ padding: 0, margin: 0 }}>
           <ErrorBoundary fallback={
             <div className="w-64 bg-sidebar text-sidebar-foreground p-4">
               <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
@@ -230,7 +231,7 @@ export function AppLayout({
               onLogoClick={onLogoClick}
             />
           </ErrorBoundary>
-          <SidebarInset id="sidebar-inset" className="bg-sidebar group/sidebar-inset" role="main">
+          <SidebarInset id="sidebar-inset" className="bg-sidebar group/sidebar-inset" role="main" style={{ paddingLeft: 0, margin: 0 }}>
             <ErrorBoundary fallback={
               <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
                 <h2 className="text-lg font-semibold mb-2">Header Error</h2>
@@ -244,7 +245,7 @@ export function AppLayout({
                 {headerContent ? (
                   headerContent
                 ) : (
-                  <div className="flex items-center gap-8 ml-auto">
+                  <div className="flex items-center gap-8">
                     {mainNavItems && mainNavItems}
                     {userDropdown || <UserDropdown />}
                   </div>
@@ -256,29 +257,141 @@ export function AppLayout({
               mobileBreakpoint={mobileBreakpoint}
             >
               <ErrorBoundary>
-                <MainContent 
-                  showSettingsPanel={showSettingsPanel}
-                  backgroundClassName={backgroundClassName}
-                  settingsPanelContent={settingsPanelContent}
-                  header={contentHeader}
-                  showSettingsPanelTrigger={showSettingsPanelTrigger}
-                  headerClassName={contentHeaderClassName}
-                >
-                  <ErrorBoundary fallback={
-                    <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
-                      <h2 className="text-lg font-semibold mb-2">Content Error</h2>
-                      <p>There was a problem loading the content.</p>
-                      <button
-                        onClick={() => window.location.reload()}
-                        className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded"
+                <div className="flex h-[calc(100vh-4rem)]  md:rounded-s-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg  overflow-hidden w-full flex-1">
+                  {/* 
+                    Completely restructured content rendering to avoid nesting issues:
+                    1. If children is already MainContent, extract and use its props directly
+                    2. Otherwise, wrap children in typical content structure
+                    3. Settings panel is always rendered by AppLayout 
+                  */}
+                  
+                  {/* Content area */}
+                  {React.isValidElement(children) && children.type === MainContent ? (
+                    // Extract MainContent props and render without nesting ScrollAreas
+                    (() => {
+                      const mainContentProps = (children as React.ReactElement<MainContentProps>).props;
+                      const bgClassName = mainContentProps.backgroundClassName || backgroundClassName;
+                      const headerToShow = headerContent ? null : mainContentProps.header;
+                      const shouldShowTrigger = headerContent ? false : 
+                        (mainContentProps.showSettingsPanelTrigger ?? showSettingsPanelTrigger);
+                      const headerClassToUse = mainContentProps.headerClassName || contentHeaderClassName;
+                      
+                      return (
+                        <div className={cn(
+                          "flex-1 w-full h-full  overflow-hidden",
+                          "md:rounded-s-[inherit]",
+                          showSettingsPanel ? "min-[1024px]:rounded-e-lg" : "min-[1024px]:rounded-e-3xl",
+                          bgClassName
+                        )}
+                        style={{ width: '100%', flex: 1, height: 'calc(100vh - 4rem)' }}>
+                          <ScrollArea 
+                            id="main-content-area" 
+                            className="h-full w-full "
+                          >
+                            {/* Header (if needed) */}
+                            {(headerToShow || (shouldShowTrigger && showSettingsPanel)) && (
+                              <div className={cn(
+                                "flex justify-between items-center py-2 px-4 mb-4",
+                                headerClassToUse
+                              )}>
+                                <div className="flex-1">
+                                  {typeof headerToShow === 'string' ? (
+                                    <h1 className="text-xl font-semibold">{headerToShow}</h1>
+                                  ) : (
+                                    headerToShow
+                                  )}
+                                </div>
+                                
+                                {shouldShowTrigger && showSettingsPanel && (
+                                  <div className="flex items-center">
+                                    <SettingsPanelTrigger />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Content */}
+                            <div className="px-4">
+                              <ErrorBoundary fallback={
+                                <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
+                                  <h2 className="text-lg font-semibold mb-2">Content Error</h2>
+                                  <p>There was a problem loading the content.</p>
+                                  <button
+                                    onClick={() => window.location.reload()}
+                                    className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded"
+                                  >
+                                    Reload
+                                  </button>
+                                </div>
+                              }>
+                                {mainContentProps.children}
+                              </ErrorBoundary>
+                            </div>
+                          </ScrollArea>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    // Standard rendering for non-MainContent children
+                    <div className={cn(
+                      "flex-1 w-full h-full  overflow-hidden m-0",
+                      "md:rounded-s-[inherit]",
+                      showSettingsPanel ? "min-[1024px]:rounded-e-lg" : "min-[1024px]:rounded-e-3xl",
+                      backgroundClassName
+                    )}
+                    style={{ width: '100%', flex: 1, height: 'calc(100vh - 4rem)' }}>
+                      <ScrollArea 
+                        id="main-content-area" 
+                        className="h-full w-full"
                       >
-                        Reload
-                      </button>
+                        {/* Regular header */}
+                        {(contentHeader || (showSettingsPanelTrigger && showSettingsPanel)) && !headerContent && (
+                          <div className={cn(
+                            "flex justify-between items-center py-2 px-4 mb-4",
+                            contentHeaderClassName
+                          )}>
+                            <div className="flex-1">
+                              {typeof contentHeader === 'string' ? (
+                                <h1 className="text-xl font-semibold">{contentHeader}</h1>
+                              ) : (
+                                contentHeader
+                              )}
+                            </div>
+                            
+                            {showSettingsPanelTrigger && showSettingsPanel && (
+                              <div className="flex items-center">
+                                <SettingsPanelTrigger />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Regular content */}
+                        <div className="px-4">
+                          <ErrorBoundary fallback={
+                            <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
+                              <h2 className="text-lg font-semibold mb-2">Content Error</h2>
+                              <p>There was a problem loading the content.</p>
+                              <button
+                                onClick={() => window.location.reload()}
+                                className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded"
+                              >
+                                Reload
+                              </button>
+                            </div>
+                          }>
+                            {children}
+                          </ErrorBoundary>
+                        </div>
+                      </ScrollArea>
                     </div>
-                  }>
-                    {children}
-                  </ErrorBoundary>
-                </MainContent>
+                  )}
+                  
+                  {/* Settings panel - exclusively rendered by AppLayout */}
+                  {showSettingsPanel && settingsPanelContent && (
+                    <SettingsPanel content={settingsPanelContent} />
+                  )}
+                </div>
               </ErrorBoundary>
             </SettingsPanelProvider>
           </SidebarInset>

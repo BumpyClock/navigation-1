@@ -40,6 +40,11 @@
   --sidebar-ring: oklch(0.871 0.006 286.286);
   --content: oklch(1 0 0);
   --content-dark: oklch(0.21 0.006 285.885);
+  
+  /* Sidebar width variables */
+  --sidebar-width: 16rem;
+  --sidebar-width-mobile: 18rem;
+  --sidebar-width-icon: 3rem;
 }
 
 /* Dark theme overrides */
@@ -166,5 +171,13 @@
   .dark .bg-content-dark {
     background-color: var(--content-dark);
   }
+  .w-sidebar-width-icon {
+    width: var(--sidebar-width-icon);
+  }
+  .w-sidebar-width {
+    width: var(--sidebar-width);
+  }
+  .w-sidebar-width-mobile {
+    width: var(--sidebar-width-mobile);
+  }
 }
-

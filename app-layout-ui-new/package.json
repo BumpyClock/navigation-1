@@ -71,8 +71,10 @@
     "@remixicon/react": "^4.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.479.0",
-    "tailwind-merge": "^3.0.2"
+    "lucide-react": "0.506.0",
+    "tailwind-merge": "^3.0.2",
+    "framer-motion": "^12.9.4"
+
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

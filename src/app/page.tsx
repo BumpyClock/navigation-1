@@ -44,13 +44,18 @@ export default function Page() {
       items: [
         {
           title: "Dashboard",
-          url: "#",
+          url: "/",
           icon: "computer",
           isActive: true,
         },
         {
-          title: "Projects",
-          url: "#",
+          title: "Basic Demo",
+          url: "/layout-test",
+          icon: "dashboard",
+        },
+        {
+          title: "Advanced Demo",
+          url: "/layout-test-advanced",
           icon: "braces",
         },
         {
@@ -95,15 +100,21 @@ export default function Page() {
       </a>
       <a
         className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
-        href="/custom-example"
+        href="/layout-test"
       >
-        Examples
+        Basic Demo
       </a>
       <a
         className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
-        href="#"
+        href="/layout-test-advanced"
       >
-        Documentation
+        Advanced Demo
+      </a>
+      <a
+        className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
+        href="/custom-example"
+      >
+        Custom Example
       </a>
     </nav>
   );

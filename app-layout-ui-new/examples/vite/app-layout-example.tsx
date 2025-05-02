@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { AppLayout } from 'app-layout-ui'; // In actual usage, this would be imported from the package
 
 export default function AppLayoutExample() {
+  // Note: This layout has been enhanced with:
+  // 1. Responsive breakpoints - settings panel collapses at 1170px, sidebar at 1000px
+  // 2. Smooth animations with framer-motion for better UX
+  // 3. Intelligent adaptation to screen width
+  
   const [darkMode, setDarkMode] = useState(false);
   
   // Define site info with logo and name
