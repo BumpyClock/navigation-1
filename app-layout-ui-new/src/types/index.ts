@@ -18,7 +18,7 @@ export type Team = {
 export type NavItem = {
   title: string;
   url: string;
-  icon?: string;
+  icon?: string | React.ComponentType<any> | React.ReactNode; // Updated to accept component or node
   isActive?: boolean;
 };
 

@@ -228,13 +228,14 @@ export function Sidebar({
       {/* This div controls the width */}
       <div
         className={cn(
-          "relative bg-transparent transition-[width] duration-200 ease-linear",
+          "relative bg-transparent transition-[width]",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180"
         )}
         style={{
           width: state === "collapsed" ? '0' : 'var(--sidebar-width)',
-          position: state === "collapsed" ? 'absolute' : 'relative'
+          position: state === "collapsed" ? 'absolute' : 'relative',
+          transition: 'width 300ms cubic-bezier(0.25, 0.1, 0.25, 1.0)'
         }}
       />
       {/* This is the actual sidebar content */}
@@ -254,7 +255,8 @@ export function Sidebar({
           width: state === "collapsed" 
             ? 'var(--sidebar-width-icon)'
             : 'var(--sidebar-width)',
-          transition: 'width 300ms cubic-bezier(0.175, 0.885, 0.32, 1.1)'
+          transition: 'width 300ms cubic-bezier(0.25, 0.1, 0.25, 1.0), left 300ms cubic-bezier(0.25, 0.1, 0.25, 1.0), right 300ms cubic-bezier(0.25, 0.1, 0.25, 1.0)',
+          transitionTimingFunction: 'cubic-bezier(0.25, 0.1, 0.25, 1.0)'
         }}
         {...props}
       >
@@ -333,7 +335,18 @@ export interface SidebarInsetProps extends React.ComponentProps<"main"> {}
 export function SidebarInset({ className, ...props }: SidebarInsetProps) {
   // Access sidebar state to adjust the main content area
   const { state: sidebarState, isMobile } = useSidebar();
-  const isCollapsed = sidebarState === "collapsed";
+  
+  // We'll use CSS variables for all layout values for better maintainability
+  // and more predictable transitions
+  React.useEffect(() => {
+    // Apply CSS variables to document for global access
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty(
+        '--sidebar-inset-margin', 
+        !isMobile ? (sidebarState === 'collapsed' ? '48px' : '256px') : '0'
+      );
+    }
+  }, [sidebarState, isMobile]);
   
   return (
     <main
@@ -345,9 +358,9 @@ export function SidebarInset({ className, ...props }: SidebarInsetProps) {
         className
       )}
       style={{
-        marginLeft: !isMobile ? (isCollapsed ? '48px' : '256px') : '0', 
-        width: !isMobile ? `calc(100% - ${isCollapsed ? '48px' : '256px'})` : '100%',
-        transition: 'margin-left 300ms cubic-bezier(0.175, 0.885, 0.32, 1.1), width 300ms cubic-bezier(0.175, 0.885, 0.32, 1.1)'
+        marginLeft: `var(--sidebar-inset-margin, ${!isMobile ? (sidebarState === 'collapsed' ? '48px' : '256px') : '0'})`,
+        width: `calc(100% - var(--sidebar-inset-margin, ${!isMobile ? (sidebarState === 'collapsed' ? '48px' : '256px') : '0'}))`,
+        transition: 'margin-left 300ms cubic-bezier(0.25, 0.1, 0.25, 1.0), width 300ms cubic-bezier(0.25, 0.1, 0.25, 1.0)'
       }}
       {...props}
     />
@@ -680,108 +693,4 @@ export function SidebarMenuBadge({
 
 export interface SidebarMenuSkeletonProps extends React.ComponentProps<"div"> {
   showIcon?: boolean
-}
-
-export function SidebarMenuSkeleton({
-  className,
-  showIcon = false,
-  ...props
-}: SidebarMenuSkeletonProps) {
-  // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
-  }, [])
-
-  return (
-    <div
-      data-slot="sidebar-menu-skeleton"
-      data-sidebar="menu-skeleton"
-      className={cn("flex h-8 items-center gap-2 rounded-md px-2", className)}
-      {...props}
-    >
-      {showIcon && (
-        <Skeleton
-          className="size-4 rounded-md"
-          data-sidebar="menu-skeleton-icon"
-        />
-      )}
-      <Skeleton
-        className="h-4 flex-1"
-        data-sidebar="menu-skeleton-text"
-        style={
-          {
-            "--skeleton-width": width,
-            maxWidth: 'var(--skeleton-width)'
-          } as React.CSSProperties
-        }
-      />
-    </div>
-  )
-}
-
-export interface SidebarMenuSubProps extends React.ComponentProps<"ul"> {}
-
-export function SidebarMenuSub({ className, ...props }: SidebarMenuSubProps) {
-  return (
-    <ul
-      data-slot="sidebar-menu-sub"
-      data-sidebar="menu-sub"
-      className={cn(
-        "border-sidebar-border mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l px-2.5 py-0.5",
-        "group-data-[collapsible=icon]:hidden",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-export interface SidebarMenuSubItemProps extends React.ComponentProps<"li"> {}
-
-export function SidebarMenuSubItem({
-  className,
-  ...props
-}: SidebarMenuSubItemProps) {
-  return (
-    <li
-      data-slot="sidebar-menu-sub-item"
-      data-sidebar="menu-sub-item"
-      className={cn("group/menu-sub-item relative", className)}
-      {...props}
-    />
-  )
-}
-
-export interface SidebarMenuSubButtonProps extends React.ComponentProps<"a"> {
-  asChild?: boolean
-  size?: "sm" | "md"
-  isActive?: boolean
-}
-
-export function SidebarMenuSubButton({
-  asChild = false,
-  size = "md",
-  isActive = false,
-  className,
-  ...props
-}: SidebarMenuSubButtonProps) {
-  const Comp = asChild ? Slot : "a"
-
-  return (
-    <Comp
-      data-slot="sidebar-menu-sub-button"
-      data-sidebar="menu-sub-button"
-      data-size={size}
-      data-active={isActive}
-      className={cn(
-        "text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
-        "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
-        size === "sm" && "text-xs",
-        size === "md" && "text-sm",
-        "group-data-[collapsible=icon]:hidden",
-        className
-      )}
-      {...props}
-    />
-  )
 }

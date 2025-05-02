@@ -11,57 +11,47 @@ import { UserDropdown } from "./user-dropdown";
 import {
   SettingsPanel, SettingsPanelProvider, SettingsPanelTrigger,
 } from "./settings-panel";
-import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "../../lib/utils";
 import { MainContentProps, NavGroup, NavItem, SidebarData, SiteInfo, Team, ThemeConfig } from "../../types";
 import { ErrorBoundary } from "./error-boundary";
 import { validateTheme, applyThemeToDocument } from "../../lib/theme-utils";
-import { AppLayoutStateProvider, useAppLayoutState, useActiveTeam } from "../../lib/state";
 import { MainContent } from "./main-content";
 
+// Header component extracted to reduce complexity in AppLayout
+function Header({ 
+  headerContent, 
+  mainNavItems, 
+  userDropdown 
+}: { 
+  headerContent?: React.ReactNode;
+  mainNavItems?: React.ReactNode;
+  userDropdown?: React.ReactNode;
+}) {
+  return (
+    <header 
+      className="flex h-16 shrink-0 items-center gap-2 pl-2 pr-4 md:pr-6 md:pl-2 lg:pr-8 lg:pl-2 bg-sidebar text-sidebar-foreground relative before:absolute before:inset-y-3 before:-left-px before:w-px before:bg-linear-to-b before:from-white/5 before:via-white/15 before:to-white/5 before:z-50" 
+      role="banner"
+    >
+      <div className="group-data-[state=collapsed]/sidebar-inset:pl-4 group-data-[state=collapsed]/sidebar-inset:md:pl-6 group-data-[state=collapsed]/sidebar-inset:lg:pl-8 transition-all duration-300">
+        <SidebarTrigger className="-ms-2" aria-label="Toggle sidebar" />
+      </div>
+      {headerContent ? (
+        headerContent
+      ) : (
+        <div className="flex items-center gap-8">
+          {mainNavItems && mainNavItems}
+          {userDropdown || <UserDropdown />}
+        </div>
+      )}
+    </header>
+  );
+}
 
 /**
  * AppLayout component
  * 
  * The main layout component that provides the entire application structure including
  * sidebar, header, main content area, and optional settings panel.
- * 
- * @component
- * @example
- * ```tsx
- * <AppLayout
- *   siteInfo={{
- *     name: "My Application",
- *     logo: "/logo.svg",
- *     description: "Admin Dashboard"
- *   }}
- *   sidebarNavItems={{
- *     main: {
- *       title: "Main Navigation",
- *       items: [
- *         { title: "Dashboard", icon: "home", url: "/" },
- *         { title: "Settings", icon: "settings", url: "/settings" }
- *       ]
- *     }
- *   }}
- *   showSettingsPanel={true}
- *   theme={{
- *     sidebar: {
- *       background: "#1a202c",
- *       foreground: "#f7fafc"
- *     }
- *   }}
- * >
- *   <h1>Main Content Area</h1>
- *   <p>Your app content goes here.</p>
- * </AppLayout>
- * ```
- * 
- * @accessibility
- * - Uses semantic HTML elements (header, main)
- * - Implements proper ARIA roles
- * - Keyboard navigation support
- * - Error boundaries for graceful error handling
  */
 export interface AppLayoutProps {
   /** The main content of the application */
@@ -174,7 +164,6 @@ export function AppLayout({
   
   /**
    * Function to apply theme CSS variables to the document root
-   * Uses the validated theme for better safety
    */
   const applyThemeVariables = React.useCallback(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
@@ -203,7 +192,25 @@ export function AppLayout({
     applyThemeVariables();
   }, [isMounted, applyThemeVariables]);
 
-  // Import focus-visible styles in the CSS file
+  // Helper to properly render content based on type
+  const renderContent = () => {
+    // If children is already a MainContent component, use it directly
+    if (React.isValidElement(children) && children.type === MainContent) {
+      return children;
+    }
+    
+    // Otherwise, wrap the children in a MainContent component
+    return (
+      <MainContent
+        header={contentHeader}
+        showSettingsPanelTrigger={showSettingsPanelTrigger && showSettingsPanel}
+        headerClassName={contentHeaderClassName}
+        backgroundClassName={backgroundClassName}
+      >
+        {children}
+      </MainContent>
+    );
+  };
 
   return (
     <div className="app-layout-ui">
@@ -238,156 +245,22 @@ export function AppLayout({
                 <p>There was a problem loading the header.</p>
               </div>
             }>
-              <header className="flex h-16 shrink-0 items-center gap-2 pl-2 pr-4 md:pr-6 md:pl-2 lg:pr-8 lg:pl-2 bg-sidebar text-sidebar-foreground relative before:absolute before:inset-y-3 before:-left-px before:w-px before:bg-linear-to-b before:from-white/5 before:via-white/15 before:to-white/5 before:z-50" role="banner">
-                <div className="group-data-[state=collapsed]/sidebar-inset:pl-4 group-data-[state=collapsed]/sidebar-inset:md:pl-6 group-data-[state=collapsed]/sidebar-inset:lg:pl-8 transition-all duration-300">
-                  <SidebarTrigger className="-ms-2" aria-label="Toggle sidebar" />
-                </div>
-                {headerContent ? (
-                  headerContent
-                ) : (
-                  <div className="flex items-center gap-8">
-                    {mainNavItems && mainNavItems}
-                    {userDropdown || <UserDropdown />}
-                  </div>
-                )}
-              </header>
+              <Header 
+                headerContent={headerContent}
+                mainNavItems={mainNavItems}
+                userDropdown={userDropdown}
+              />
             </ErrorBoundary>
             <SettingsPanelProvider 
               defaultOpen={defaultSettingsPanelOpen} 
               mobileBreakpoint={mobileBreakpoint}
             >
               <ErrorBoundary>
-                <div className="flex h-[calc(100vh-4rem)]  md:rounded-s-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg  overflow-hidden w-full flex-1">
-                  {/* 
-                    Completely restructured content rendering to avoid nesting issues:
-                    1. If children is already MainContent, extract and use its props directly
-                    2. Otherwise, wrap children in typical content structure
-                    3. Settings panel is always rendered by AppLayout 
-                  */}
-                  
+                <div className="flex h-[calc(100vh-4rem)] md:rounded-s-3xl md:rounded-e-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-e-lg overflow-hidden w-full flex-1">
                   {/* Content area */}
-                  {React.isValidElement(children) && children.type === MainContent ? (
-                    // Extract MainContent props and render without nesting ScrollAreas
-                    (() => {
-                      const mainContentProps = (children as React.ReactElement<MainContentProps>).props;
-                      const bgClassName = mainContentProps.backgroundClassName || backgroundClassName;
-                      const headerToShow = headerContent ? null : mainContentProps.header;
-                      const shouldShowTrigger = headerContent ? false : 
-                        (mainContentProps.showSettingsPanelTrigger ?? showSettingsPanelTrigger);
-                      const headerClassToUse = mainContentProps.headerClassName || contentHeaderClassName;
-                      
-                      return (
-                        <div className={cn(
-                          "flex-1 w-full h-full  overflow-hidden",
-                          "md:rounded-s-[inherit]",
-                          showSettingsPanel ? "min-[1024px]:rounded-e-lg" : "min-[1024px]:rounded-e-3xl",
-                          bgClassName
-                        )}
-                        style={{ width: '100%', flex: 1, height: 'calc(100vh - 4rem)' }}>
-                          <ScrollArea 
-                            id="main-content-area" 
-                            className="h-full w-full "
-                          >
-                            {/* Header (if needed) */}
-                            {(headerToShow || (shouldShowTrigger && showSettingsPanel)) && (
-                              <div className={cn(
-                                "flex justify-between items-center py-2 px-4 mb-4",
-                                headerClassToUse
-                              )}>
-                                <div className="flex-1">
-                                  {typeof headerToShow === 'string' ? (
-                                    <h1 className="text-xl font-semibold">{headerToShow}</h1>
-                                  ) : (
-                                    headerToShow
-                                  )}
-                                </div>
-                                
-                                {shouldShowTrigger && showSettingsPanel && (
-                                  <div className="flex items-center">
-                                    <SettingsPanelTrigger />
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            
-                            {/* Content */}
-                            <div className="px-4">
-                              <ErrorBoundary fallback={
-                                <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
-                                  <h2 className="text-lg font-semibold mb-2">Content Error</h2>
-                                  <p>There was a problem loading the content.</p>
-                                  <button
-                                    onClick={() => window.location.reload()}
-                                    className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded"
-                                  >
-                                    Reload
-                                  </button>
-                                </div>
-                              }>
-                                {mainContentProps.children}
-                              </ErrorBoundary>
-                            </div>
-                          </ScrollArea>
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    // Standard rendering for non-MainContent children
-                    <div className={cn(
-                      "flex-1 w-full h-full  overflow-hidden m-0",
-                      "md:rounded-s-[inherit]",
-                      showSettingsPanel ? "min-[1024px]:rounded-e-lg" : "min-[1024px]:rounded-e-3xl",
-                      backgroundClassName
-                    )}
-                    style={{ width: '100%', flex: 1, height: 'calc(100vh - 4rem)' }}>
-                      <ScrollArea 
-                        id="main-content-area" 
-                        className="h-full w-full"
-                      >
-                        {/* Regular header */}
-                        {(contentHeader || (showSettingsPanelTrigger && showSettingsPanel)) && !headerContent && (
-                          <div className={cn(
-                            "flex justify-between items-center py-2 px-4 mb-4",
-                            contentHeaderClassName
-                          )}>
-                            <div className="flex-1">
-                              {typeof contentHeader === 'string' ? (
-                                <h1 className="text-xl font-semibold">{contentHeader}</h1>
-                              ) : (
-                                contentHeader
-                              )}
-                            </div>
-                            
-                            {showSettingsPanelTrigger && showSettingsPanel && (
-                              <div className="flex items-center">
-                                <SettingsPanelTrigger />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        
-                        {/* Regular content */}
-                        <div className="px-4">
-                          <ErrorBoundary fallback={
-                            <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
-                              <h2 className="text-lg font-semibold mb-2">Content Error</h2>
-                              <p>There was a problem loading the content.</p>
-                              <button
-                                onClick={() => window.location.reload()}
-                                className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded"
-                              >
-                                Reload
-                              </button>
-                            </div>
-                          }>
-                            {children}
-                          </ErrorBoundary>
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  )}
+                  {renderContent()}
                   
-                  {/* Settings panel - exclusively rendered by AppLayout */}
+                  {/* Settings panel */}
                   {showSettingsPanel && settingsPanelContent && (
                     <SettingsPanel content={settingsPanelContent} />
                   )}

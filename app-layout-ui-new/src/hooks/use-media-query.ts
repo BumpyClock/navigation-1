@@ -48,6 +48,29 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /**
+ * A hook that debounces the result of useMediaQuery
+ * 
+ * @param query The media query to match against
+ * @param delay The debounce delay in milliseconds (default: 150)
+ * @returns Debounced boolean indicating if the query matches
+ */
+export function useDebouncedMediaQuery(query: string, delay: number = 150): boolean {
+  const matches = useMediaQuery(query);
+  const [debouncedMatches, setDebouncedMatches] = React.useState(matches);
+  
+  React.useEffect(() => {
+    // Use debouncing to make animations smoother during resize
+    const timer = setTimeout(() => {
+      setDebouncedMatches(matches);
+    }, delay);
+    
+    return () => clearTimeout(timer);
+  }, [matches, delay]);
+  
+  return debouncedMatches;
+}
+
+/**
  * A hook to detect if the viewport is at mid-width (e.g., tablets)
  * with debouncing to prevent rapid state changes during resize
  * 
@@ -56,19 +79,7 @@ export function useMediaQuery(query: string): boolean {
  * @returns Boolean indicating if the viewport is within the specified range
  */
 export function useMidWidth(min: number = 1000, max: number = 1170): boolean {
-  const matches = useMediaQuery(`(min-width: ${min}px) and (max-width: ${max}px)`);
-  const [debouncedMatches, setDebouncedMatches] = React.useState(matches);
-  
-  React.useEffect(() => {
-    // Use debouncing to make animations smoother during resize
-    const timer = setTimeout(() => {
-      setDebouncedMatches(matches);
-    }, 150); // Small delay to prevent janky animations during resize
-    
-    return () => clearTimeout(timer);
-  }, [matches]);
-  
-  return debouncedMatches;
+  return useDebouncedMediaQuery(`(min-width: ${min}px) and (max-width: ${max}px)`);
 }
 
 /**
@@ -79,19 +90,7 @@ export function useMidWidth(min: number = 1000, max: number = 1170): boolean {
  * @returns Boolean indicating if the viewport is narrower than the specified width
  */
 export function useMaxWidth(width: number): boolean {
-  const matches = useMediaQuery(`(max-width: ${width}px)`);
-  const [debouncedMatches, setDebouncedMatches] = React.useState(matches);
-  
-  React.useEffect(() => {
-    // Use debouncing to make animations smoother during resize
-    const timer = setTimeout(() => {
-      setDebouncedMatches(matches);
-    }, 150); // Small delay to prevent janky animations during resize
-    
-    return () => clearTimeout(timer);
-  }, [matches]);
-  
-  return debouncedMatches;
+  return useDebouncedMediaQuery(`(max-width: ${width}px)`);
 }
 
 /**
