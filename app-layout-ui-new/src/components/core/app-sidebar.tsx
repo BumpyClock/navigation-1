@@ -16,7 +16,7 @@ import {
   RiStackLine,
 } from "@remixicon/react";
 
-import { TeamSwitcher } from "@/components/team-switcher";
+import { TeamSwitcher } from "./team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -28,29 +28,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from "../ui/sidebar";
 
-// Define types for sidebar data
-type NavItem = {
-  title: string;
-  url: string;
-  icon?: string; // Using string identifiers instead of component references
-  isActive?: boolean;
-};
-
-type NavGroup = {
-  title: string;
-  url: string;
-  items: NavItem[];
-};
-
-type SidebarData = {
-  teams: {
-    name: string;
-    logo: string;
-  }[];
-  navMain: NavGroup[];
-};
+import { NavGroup, SidebarData, Team } from "../../types";
 
 // Using any type to avoid RemixiconComponentType type issues
 type IconMapType = Record<string, any>;
@@ -75,13 +55,22 @@ const defaultIconMap: IconMapType = {
   stack: RiStackLine,
 };
 
-type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   data?: SidebarData;
   iconMap?: IconMapType;
-  children?: React.ReactNode;
-};
+  onTeamChange?: (team: Team) => void;
+  onNavItemClick?: (item: NavGroup) => void;
+}
 
-export function AppSidebar({ data, iconMap = defaultIconMap, children, ...props }: AppSidebarProps) {
+export function AppSidebar({ 
+  data, 
+  iconMap = defaultIconMap, 
+  children, 
+  onTeamChange,
+  onNavItemClick,
+  ...props 
+}: AppSidebarProps) {
+  // If no data is provided, render a basic sidebar with only children
   if (!data) {
     return (
       <Sidebar {...props} className="border-none! !dark:bg-secondary-background">
@@ -94,7 +83,10 @@ export function AppSidebar({ data, iconMap = defaultIconMap, children, ...props 
     <Sidebar {...props} className="border-none! !dark:bg-secondary-background">
       <SidebarHeader>
         {data.teams && data.teams.length > 0 && (
-          <TeamSwitcher teams={data.teams} />
+          <TeamSwitcher 
+            teams={data.teams} 
+            onTeamChange={onTeamChange}
+          />
         )}
       </SidebarHeader>
       <SidebarContent>
@@ -116,7 +108,15 @@ export function AppSidebar({ data, iconMap = defaultIconMap, children, ...props 
                         className="group/menu-button font-medium gap-3 h-9 rounded-md data-[active=true]:hover:bg-transparent data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto"
                         isActive={item.isActive}
                       >
-                        <a href={item.url}>
+                        <a 
+                          href={item.url}
+                          onClick={(e) => {
+                            if (onNavItemClick) {
+                              e.preventDefault();
+                              onNavItemClick(item as NavGroup);
+                            }
+                          }}
+                        >
                           {IconComponent && (
                             <IconComponent
                               className="text-sidebar-foreground/50 group-data-[active=true]/menu-button:text-sidebar-foreground"
@@ -155,7 +155,15 @@ export function AppSidebar({ data, iconMap = defaultIconMap, children, ...props 
                         className="group/menu-button font-medium gap-3 h-9 rounded-md [&>svg]:size-auto"
                         isActive={item.isActive}
                       >
-                        <a href={item.url}>
+                        <a 
+                          href={item.url}
+                          onClick={(e) => {
+                            if (onNavItemClick) {
+                              e.preventDefault();
+                              onNavItemClick(item as NavGroup);
+                            }
+                          }}
+                        >
                           {IconComponent && (
                             <IconComponent
                               className="text-sidebar-foreground/50 group-data-[active=true]/menu-button:text-primary"

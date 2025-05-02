@@ -1,13 +1,13 @@
 "use client";
 
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "../../hooks/use-mobile";
 import { RiQuillPenAiLine, RiSettingsLine, RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 
-import { Sheet, SheetTitle, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetTitle, SheetContent } from "../ui/sheet";
 import * as React from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { ScrollArea } from "../ui/scroll-area";
+import { cn } from "../../lib/utils";
 
 const SETTINGS_PANEL_COOKIE_NAME = "settings_panel_state";
 const SETTINGS_PANEL_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -15,21 +15,23 @@ const SETTINGS_PANEL_KEYBOARD_SHORTCUT = "s";
 const SETTINGS_PANEL_WIDTH = "300px";
 const SETTINGS_PANEL_WIDTH_COLLAPSED = "0px";
 
-type SettingsPanelContext = {
-  state: "expanded" | "collapsed";
+export type SettingsPanelState = "expanded" | "collapsed";
+
+export interface SettingsPanelContext {
+  state: SettingsPanelState;
   open: boolean;
   setOpen: (open: boolean) => void;
   openMobile: boolean;
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
   togglePanel: () => void;
-};
+}
 
 const SettingsPanelContext = React.createContext<SettingsPanelContext | null>(
   null,
 );
 
-function useSettingsPanel() {
+export function useSettingsPanel() {
   const context = React.useContext(SettingsPanelContext);
   if (!context) {
     throw new Error(
@@ -39,18 +41,22 @@ function useSettingsPanel() {
   return context;
 }
 
-const SettingsPanelProvider = ({ 
-  defaultOpen = true,
-  open: openProp,
-  onOpenChange: setOpenProp,
-  children 
-}: { 
+export interface SettingsPanelProviderProps {
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   children: React.ReactNode;
-}) => {
-  const isMobile = useIsMobile(1024);
+  mobileBreaakpoint?: number;
+}
+
+export function SettingsPanelProvider({ 
+  defaultOpen = true,
+  open: openProp,
+  onOpenChange: setOpenProp,
+  children,
+  mobileBreaakpoint = 1024
+}: SettingsPanelProviderProps) {
+  const isMobile = useIsMobile(mobileBreaakpoint);
   const [openMobile, setOpenMobile] = React.useState(false);
   
   // This is the internal state of the panel
@@ -67,7 +73,9 @@ const SettingsPanelProvider = ({
       }
 
       // This sets the cookie to keep the panel state
-      document.cookie = `${SETTINGS_PANEL_COOKIE_NAME}=${openState}; path=/; max-age=${SETTINGS_PANEL_COOKIE_MAX_AGE}`;
+      if (typeof document !== 'undefined') {
+        document.cookie = `${SETTINGS_PANEL_COOKIE_NAME}=${openState}; path=/; max-age=${SETTINGS_PANEL_COOKIE_MAX_AGE}`;
+      }
     },
     [setOpenProp, open]
   );
@@ -79,6 +87,8 @@ const SettingsPanelProvider = ({
 
   // Adds a keyboard shortcut to toggle the panel
   React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.key === SETTINGS_PANEL_KEYBOARD_SHORTCUT &&
@@ -114,21 +124,19 @@ const SettingsPanelProvider = ({
       {children}
     </SettingsPanelContext.Provider>
   );
-};
-SettingsPanelProvider.displayName = "SettingsPanelProvider";
+}
 
-// Props for SettingsPanelContent
-interface SettingsPanelContentProps {
+export interface SettingsPanelContentProps {
   title?: string;
   icon?: React.ReactNode;
   content?: React.ReactNode;
 }
 
-const SettingsPanelContent = ({
+export function SettingsPanelContent({
   title = "",
   icon,
   content
-}: SettingsPanelContentProps) => {
+}: SettingsPanelContentProps) {
   return (
     <>
       {/* Panel header */}
@@ -154,48 +162,58 @@ const SettingsPanelContent = ({
       )}
     </>
   );
-};
-SettingsPanelContent.displayName = "SettingsPanelContent";
+}
 
-const SettingsPanelCollapseButton = () => {
+export interface SettingsPanelCollapseButtonProps extends React.ComponentProps<typeof Button> {}
+
+export function SettingsPanelCollapseButton({ className, ...props }: SettingsPanelCollapseButtonProps) {
   const { togglePanel } = useSettingsPanel();
   
   return (
     <Button 
       variant="ghost" 
       size="icon" 
-      className="h-7 w-7 rounded-full hover:bg-black/10" 
+      className={cn("h-7 w-7 rounded-full hover:bg-black/10", className)}
       onClick={togglePanel}
+      {...props}
     >
       <RiArrowLeftSLine size={18} />
       <span className="sr-only">Collapse panel</span>
     </Button>
   );
-};
+}
 
-const SettingsPanelExpandButton = () => {
+export interface SettingsPanelExpandButtonProps extends React.ComponentProps<typeof Button> {}
+
+export function SettingsPanelExpandButton({ className, ...props }: SettingsPanelExpandButtonProps) {
   const { togglePanel } = useSettingsPanel();
   
   return (
     <Button 
       variant="ghost" 
       size="icon" 
-      className="h-7 w-7 rounded-full hover:bg-black/10 absolute right-2 top-5 z-20 bg-gray-200/70 dark:bg-gray-700/70" 
+      className={cn("h-7 w-7 rounded-full hover:bg-black/10 absolute right-2 top-5 z-20 bg-gray-200/70 dark:bg-gray-700/70", className)}
       onClick={togglePanel}
+      {...props}
     >
       <RiArrowRightSLine size={18} />
       <span className="sr-only">Expand panel</span>
     </Button>
   );
-};
+}
 
-const SettingsPanel = ({ content }: { content?: React.ReactNode }) => {
+export interface SettingsPanelProps {
+  content?: React.ReactNode;
+  className?: string;
+}
+
+export function SettingsPanel({ content, className }: SettingsPanelProps) {
   const { isMobile, openMobile, setOpenMobile, open } = useSettingsPanel();
 
   if (isMobile) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
-        <SheetContent className="w-72 px-4 md:px-6 py-0 bg-sidebar [&>button]:hidden">
+        <SheetContent className={cn("w-72 px-4 md:px-6 py-0 bg-sidebar [&>button]:hidden", className)}>
           <SheetTitle className="hidden">Settings</SheetTitle>
           <div className="flex h-full w-full flex-col">
             <SettingsPanelContent content={content} />
@@ -210,7 +228,8 @@ const SettingsPanel = ({ content }: { content?: React.ReactNode }) => {
       <div 
         className={cn(
           "transition-all duration-300 ease-in-out overflow-hidden bg-sidebar dark:bg-gray-800 h-full rounded-tr-3xl rounded-br-3xl",
-          open ? "w-[300px]" : "w-0"
+          open ? "w-[300px]" : "w-0",
+          className
         )}
       >
         {open && (
@@ -224,10 +243,11 @@ const SettingsPanel = ({ content }: { content?: React.ReactNode }) => {
       {!open && <SettingsPanelExpandButton />}
     </div>
   );
-};
-SettingsPanel.displayName = "SettingsPanel";
+}
 
-const SettingsPanelRail = ({ className, ...props }: React.ComponentProps<"button">) => {
+export interface SettingsPanelRailProps extends React.ComponentProps<"button"> {}
+
+export function SettingsPanelRail({ className, ...props }: SettingsPanelRailProps) {
   const { togglePanel } = useSettingsPanel();
 
   return (
@@ -246,16 +266,18 @@ const SettingsPanelRail = ({ className, ...props }: React.ComponentProps<"button
       {...props}
     />
   );
-};
+}
 
-const SettingsPanelTrigger = ({
+export interface SettingsPanelTriggerProps extends React.ComponentProps<typeof Button> {
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+export function SettingsPanelTrigger({
   onClick,
   className,
   ...props
-}: React.ComponentProps<typeof Button> & {
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-}) => {
-  const { isMobile, state, togglePanel } = useSettingsPanel();
+}: SettingsPanelTriggerProps) {
+  const { togglePanel } = useSettingsPanel();
 
   return (
     <Button
@@ -275,13 +297,4 @@ const SettingsPanelTrigger = ({
       <span className="max-sm:sr-only">Settings</span>
     </Button>
   );
-};
-SettingsPanelTrigger.displayName = "SettingsPanelTrigger";
-
-export {
-  SettingsPanel,
-  SettingsPanelProvider,
-  SettingsPanelTrigger,
-  SettingsPanelRail,
-  useSettingsPanel,
-};
+}

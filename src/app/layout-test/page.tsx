@@ -1,0 +1,134 @@
+"use client"
+
+import dynamic from 'next/dynamic';
+import ChatInterface from "@/components/chat-interface";
+
+// Dynamically import the AppLayout component from our new package
+// In a real app, you'd import from the package: import { AppLayout } from "app-layout-ui"
+const AppLayout = dynamic(() => import('../../../app-layout-ui-new/src/components/core/app-layout').then(mod => mod.AppLayout), {
+  ssr: false,
+});
+
+export default function NewLayoutTestPage() {
+  // Define custom teams for the sidebar
+  const teams = [
+    {
+      name: "New Layout Test",
+      logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345635/logo-01_upxvqe.png",
+    },
+  ];
+
+  // Define custom navigation for the sidebar
+  const sidebarNavItems = {
+    main: {
+      title: "Application",
+      url: "#",
+      items: [
+        {
+          title: "Home",
+          url: "/",
+          icon: "home",
+        },
+        {
+          title: "Layout Test",
+          url: "/layout-test",
+          icon: "dashboard",
+          isActive: true,
+        },
+        {
+          title: "Projects",
+          url: "#",
+          icon: "computer",
+        },
+        {
+          title: "Resources",
+          url: "#",
+          icon: "stack",
+        },
+      ],
+    },
+  };
+
+  // Define custom top navigation
+  const mainNavItems = (
+    <nav className="flex items-center text-sm font-medium max-sm:hidden">
+      <a
+        className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
+        href="/"
+      >
+        Home
+      </a>
+      <a
+        className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
+        href="/layout-test"
+        aria-current
+      >
+        Layout Test
+      </a>
+    </nav>
+  );
+
+  // Define custom settings panel content
+  const settingsPanelContent = (
+    <div className="space-y-4">
+      <div>
+        <h3 className="font-medium text-sm mb-1">Theme</h3>
+        <select className="w-full bg-background border border-sidebar-border rounded-md p-2 text-sm">
+          <option>Light</option>
+          <option>Dark</option>
+          <option>System</option>
+        </select>
+      </div>
+      <div>
+        <h3 className="font-medium text-sm mb-1">Language</h3>
+        <select className="w-full bg-background border border-sidebar-border rounded-md p-2 text-sm">
+          <option>English</option>
+          <option>Spanish</option>
+          <option>French</option>
+        </select>
+      </div>
+      <div>
+        <h3 className="font-medium text-sm mb-1">Notifications</h3>
+        <div className="flex items-center">
+          <input type="checkbox" id="enable-notifications" className="mr-2" />
+          <label htmlFor="enable-notifications" className="text-sm">Enable notifications</label>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      {AppLayout ? (
+        <AppLayout
+          showSettingsPanel={true}
+          defaultSettingsPanelOpen={true}
+          teams={teams}
+          sidebarNavItems={sidebarNavItems}
+          mainNavItems={mainNavItems}
+          backgroundClassName="bg-white dark:bg-gray-950"
+          settingsPanelContent={settingsPanelContent}
+        >
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">New Layout Component Test</h1>
+            <p className="mb-4">This page is using our new AppLayout component to test its functionality.</p>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+              <h2 className="text-lg font-medium mb-2">Features</h2>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Responsive layout with sidebar</li>
+                <li>Settings panel on the right</li>
+                <li>Customizable navigation items</li>
+                <li>Team switcher integration</li>
+                <li>Dark mode support</li>
+              </ul>
+            </div>
+          </div>
+        </AppLayout>
+      ) : (
+        <div className="p-6">
+          <h1 className="text-2xl font-bold mb-4">Loading layout component...</h1>
+        </div>
+      )}
+    </div>
+  );
+}

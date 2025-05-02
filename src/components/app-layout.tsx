@@ -16,32 +16,31 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
-// Import the types we need from the AppSidebar
-// These types match what we defined in app-sidebar.tsx
-type Team = {
+// Type definitions
+export type Team = {
   name: string;
   logo: string;
 };
 
-type NavItem = {
+export type NavItem = {
   title: string;
   url: string;
   icon?: string;
   isActive?: boolean;
 };
 
-type NavGroup = {
+export type NavGroup = {
   title: string;
   url: string;
   items: NavItem[];
 };
 
-type SidebarData = {
+export type SidebarData = {
   teams: Team[];
   navMain: NavGroup[];
 };
 
-type AppLayoutProps = {
+export interface AppLayoutProps {
   children: React.ReactNode;
   showSettingsPanel?: boolean;
   defaultSettingsPanelOpen?: boolean;
@@ -54,40 +53,7 @@ type AppLayoutProps = {
   userDropdown?: React.ReactNode;
   headerContent?: React.ReactNode;
   backgroundClassName?: string;
-};
-
-// Create a wrapper component to access the settings panel context
-function MainContent({
-  children,
-  showSettingsPanel,
-  backgroundClassName,
-}: {
-  children: React.ReactNode;
-  showSettingsPanel: boolean;
-  backgroundClassName: string;
-}) {
-  const { state } = useSettingsPanel();
-  const isCollapsed = state === "collapsed";
-
-  return (
-    <div className={`flex h-[calc(100svh-4rem)] md:rounded-s-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg transition-all ease-in-out duration-300 overflow-hidden h-full`}>
-      <div className={cn(
-        `flex-1 w-full h-full md:rounded-s-[inherit] transition-all ease-in-out duration-300 overflow-hidden`,
-          showSettingsPanel && isCollapsed ? "min-[1024px]:rounded-e-lg" : "min-[1024px]:rounded-e-3xl",
-        backgroundClassName
-      )}>
-        <ScrollArea 
-          id="main-content-area" 
-          className="flex-1 h-full"
-        >
-          <div className="h-full">
-            {children}
-          </div>
-        </ScrollArea>
-      </div>
-      {showSettingsPanel && <SettingsPanel />}
-    </div>
-  );
+  settingsPanelContent?: React.ReactNode;
 }
 
 export function AppLayout({
@@ -100,6 +66,7 @@ export function AppLayout({
   userDropdown,
   headerContent,
   backgroundClassName = "bg-content dark:bg-content-dark",
+  settingsPanelContent,
 }: AppLayoutProps) {
   // Create data object for AppSidebar if custom nav items are provided
   const sidebarData: SidebarData | undefined = sidebarNavItems ? {
@@ -128,37 +95,7 @@ export function AppLayout({
             headerContent
           ) : (
             <div className="flex items-center gap-8 ml-auto">
-              {mainNavItems ? (
-                mainNavItems
-              ) : (
-                <nav className="flex items-center text-sm font-medium max-sm:hidden">
-                  <a
-                    className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
-                    href="#"
-                    aria-current
-                  >
-                    Playground
-                  </a>
-                  <a
-                    className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
-                    href="#"
-                  >
-                    Dashboard
-                  </a>
-                  <a
-                    className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
-                    href="#"
-                  >
-                    Docs
-                  </a>
-                  <a
-                    className="text-sidebar-foreground/50 hover:text-sidebar-foreground/70 transition-colors aria-[current]:text-sidebar-foreground before:content-['/'] before:px-4 before:text-sidebar-foreground/30 first:before:hidden"
-                    href="#"
-                  >
-                    API Reference
-                  </a>
-                </nav>
-              )}
+              {mainNavItems && mainNavItems}
               {userDropdown || <UserDropdown />}
             </div>
           )}
@@ -167,11 +104,50 @@ export function AppLayout({
           <MainContent 
             showSettingsPanel={showSettingsPanel}
             backgroundClassName={backgroundClassName}
+            settingsPanelContent={settingsPanelContent}
           >
             {children}
           </MainContent>
         </SettingsPanelProvider>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+// MainContent is an internal component used by AppLayout
+interface MainContentProps {
+  children: React.ReactNode;
+  showSettingsPanel: boolean;
+  backgroundClassName: string;
+  settingsPanelContent?: React.ReactNode;
+}
+
+function MainContent({
+  children,
+  showSettingsPanel,
+  backgroundClassName,
+  settingsPanelContent,
+}: MainContentProps) {
+  const { state } = useSettingsPanel();
+  const isCollapsed = state === "collapsed";
+
+  return (
+    <div className={`flex h-[calc(100svh-4rem)] md:rounded-s-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg transition-all ease-in-out duration-300 overflow-hidden h-full`}>
+      <div className={cn(
+        `flex-1 w-full h-full md:rounded-s-[inherit] transition-all ease-in-out duration-300 overflow-hidden`,
+          showSettingsPanel && isCollapsed ? "min-[1024px]:rounded-e-lg" : "min-[1024px]:rounded-e-3xl",
+        backgroundClassName
+      )}>
+        <ScrollArea 
+          id="main-content-area" 
+          className="flex-1 h-full"
+        >
+          <div className="h-full">
+            {children}
+          </div>
+        </ScrollArea>
+      </div>
+      {showSettingsPanel && <SettingsPanel content={settingsPanelContent} />}
+    </div>
   );
 } 

@@ -1,10 +1,7 @@
 "use client"
 
 import { AppLayout } from "@/components/app-layout";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { RiHome4Line, RiComputerLine, RiDashboardLine, RiStackLine } from "@remixicon/react";
+
 import ChatInterface from "@/components/chat-interface";
 
 export default function CustomLayoutPage() {
