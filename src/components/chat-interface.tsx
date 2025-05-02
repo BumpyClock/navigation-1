@@ -20,10 +20,47 @@ import {
   RiMicLine,
   RiLeafLine,
 } from "@remixicon/react";
-import { ChatMessage } from "@/components/chat-message";
 import { useRef, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default function Chat() {
+// Consolidated ChatMessage component
+type ChatMessageProps = {
+  isUser?: boolean;
+  children: React.ReactNode;
+};
+
+const ChatMessage = ({ isUser, children }: ChatMessageProps) => {
+  return (
+    <div>
+      <div className="flex items-start gap-4">
+        <Avatar className="mt-1 size-8">
+          <AvatarImage
+            src={
+              isUser
+                ? "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345634/user-02_mlqqqt.png"
+                : "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345635/logo-01_upxvqe.png"
+            }
+            width={32}
+            height={32}
+            alt={isUser ? "User avatar" : "Bot avatar"}
+          />
+          <AvatarFallback>{isUser ? "U" : "B"}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1 space-y-2">
+          <div className="text-sm font-medium text-primary/90">
+            {isUser ? "You" : "Bolt AI"}
+          </div>
+          <div className="prose prose-sm text-muted-foreground/90 max-w-full">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main ChatInterface component
+export default function ChatInterface({ title = "Chat" }: { title?: string }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,10 +68,9 @@ export default function Chat() {
   }, []);
 
   return (
-    <ScrollArea className="flex-1 [&>div>div]:h-full w-full shadow-md md:rounded-s-[inherit] min-[1024px]:rounded-e-3xl bg-background dark:bg-gray-10">
-      <div className="h-full flex flex-col px-4 md:px-6 lg:px-8">
+      <div className="h-full flex flex-col px-4 md:px-6 lg:px-8 bg-content">
         {/* Header */}
-        <div className="py-5 bg-background sticky top-0 z-10 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-linear-to-r before:from-black/[0.06] before:via-black/10 before:to-black/[0.06]">
+        <div className="py-5  sticky top-0 z-10 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-linear-to-r before:from-black/[0.06] before:via-black/10 before:to-black/[0.06]">
           <div className="flex items-center justify-between gap-2">
             <Breadcrumb>
               <BreadcrumbList className="sm:gap-1.5">
@@ -43,7 +79,7 @@ export default function Chat() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Chat</BreadcrumbPage>
+                  <BreadcrumbPage>{title}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -77,8 +113,8 @@ export default function Chat() {
           </div>
         </div>
         {/* Chat */}
-        <div className="relative grow">
-          <div className="max-w-3xl mx-auto mt-6 space-y-6">
+        <div className="relative grow h-full">
+          <div className="max-w-3xl mx-auto mt-6 space-y-6 h-full">
             <div className="text-center my-8">
               <div className="inline-flex items-center bg-white rounded-full border border-black/[0.08] shadow-2xs text-xs font-medium py-1 px-3 text-foreground/80">
                 <RiShining2Line
@@ -201,13 +237,12 @@ export default function Chat() {
                     </svg>
                     <span className="sr-only">Generate</span>
                   </Button>
-                  <Button className="rounded-full h-8">Ask Bart</Button>
+                  <Button className="rounded-full h-8">Ask Bolt</Button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </ScrollArea>
   );
-}
+} 

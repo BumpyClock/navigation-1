@@ -1,7 +1,7 @@
 "use client";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { RiQuillPenAiLine, RiSettingsLine, RiArrowLeftSLine } from "@remixicon/react";
+import { RiQuillPenAiLine, RiSettingsLine, RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -312,13 +312,29 @@ const SettingsPanelCollapseButton = () => {
   );
 };
 
+const SettingsPanelExpandButton = () => {
+  const { togglePanel } = useSettingsPanel();
+  
+  return (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      className="h-7 w-7 rounded-full hover:bg-black/10 absolute right-2 top-5 z-20 bg-gray-200/70 dark:bg-gray-700/70" 
+      onClick={togglePanel}
+    >
+      <RiArrowRightSLine size={18} />
+      <span className="sr-only">Expand panel</span>
+    </Button>
+  );
+};
+
 const SettingsPanel = () => {
   const { isMobile, openMobile, setOpenMobile, open } = useSettingsPanel();
 
   if (isMobile) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
-        <SheetContent className="w-72 px-4 md:px-6 py-0 bg-[hsl(240_5%_92.16%)] [&>button]:hidden">
+        <SheetContent className="w-72 px-4 md:px-6 py-0 bg-sidebar [&>button]:hidden">
           <SheetTitle className="hidden">Settings</SheetTitle>
           <div className="flex h-full w-full flex-col">
             <SettingsPanelContent />
@@ -329,19 +345,22 @@ const SettingsPanel = () => {
   }
 
   return (
-    <div 
-      className={cn(
-        "transition-all duration-300 ease-in-out overflow-hidden",
-        open ? "w-[300px]" : "w-0"
-      )}
-    >
-      {open && (
-        <ScrollArea>
-          <div className="w-[300px] px-4 md:px-6">
-            <SettingsPanelContent />
-          </div>
-        </ScrollArea>
-      )}
+    <div className="relative flex h-full">
+      <div 
+        className={cn(
+          "transition-all duration-300 ease-in-out overflow-hidden bg-sidebar dark:bg-gray-800 h-full rounded-tr-3xl rounded-br-3xl",
+          open ? "w-[300px]" : "w-0"
+        )}
+      >
+        {open && (
+          <ScrollArea className="h-full">
+            <div className="w-[300px] px-4 md:px-6">
+              <SettingsPanelContent />
+            </div>
+          </ScrollArea>
+        )}
+      </div>
+      {!open && <SettingsPanelExpandButton />}
     </div>
   );
 };
