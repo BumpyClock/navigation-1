@@ -1,0 +1,40 @@
+/**
+ * CSS rules for focus visibility
+ * - Hides focus rings by default
+ * - Shows focus rings only when navigating with keyboard (using .focus-visible class)
+ */
+
+:root {
+  --focus-ring-color: #3b82f6; /* Blue focus ring */
+  --focus-ring-width: 2px;
+}
+
+/* Hide focus styles when using mouse */
+.focus-not-visible:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Only show focus styles when keyboard navigating */
+.focus-visible:focus {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color) !important;
+  outline-offset: 1px !important;
+}
+
+/* Specific styles for sidebar elements */
+.sidebar-menu-button.focus-not-visible:focus,
+.sidebar-group-label.focus-not-visible:focus,
+.sidebar-menu-action.focus-not-visible:focus,
+.sidebar-trigger.focus-not-visible:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  ring-width: 0 !important;
+}
+
+.sidebar-menu-button.focus-visible:focus,
+.sidebar-group-label.focus-visible:focus,
+.sidebar-menu-action.focus-visible:focus,
+.sidebar-trigger.focus-visible:focus {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color) !important;
+  outline-offset: 1px !important;
+}

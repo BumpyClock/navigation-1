@@ -57,7 +57,6 @@ export const SidebarSection = React.memo(function SidebarSection({
   className
 }: SidebarSectionProps) {
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
-  const [focusVisible, setFocusVisible] = React.useState(false);
   const sectionId = React.useMemo(() => 
     `section-content-${title.replace(/\s+/g, '-').toLowerCase()}`,
     [title]
@@ -69,21 +68,15 @@ export const SidebarSection = React.memo(function SidebarSection({
       setIsOpen(!isOpen);
     }
   };
-  
-  const handleFocus = () => setFocusVisible(true);
-  const handleBlur = () => setFocusVisible(false);
 
   return (
     <SidebarGroup className={cn("relative", className)}>
       <SidebarGroupLabel 
         className={cn(
-          "uppercase text-sidebar-foreground/50 flex items-center justify-between cursor-pointer",
-          focusVisible && "ring-2 ring-offset-1 ring-offset-background"
+          "uppercase text-sidebar-foreground/50 flex items-center justify-between cursor-pointer sidebar-section-header"
         )}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
         role="button"
         tabIndex={0}
         aria-expanded={isOpen}
@@ -103,6 +96,7 @@ export const SidebarSection = React.memo(function SidebarSection({
           "px-2 transition-all duration-300 ease-in-out overflow-hidden", 
           isOpen ? "max-h-96" : "max-h-0 opacity-0 pointer-events-none"
         )}
+        aria-hidden={!isOpen}
       >
         {children}
       </SidebarGroupContent>

@@ -10,54 +10,13 @@ import {
 import { UserDropdown } from "./user-dropdown";
 import {
   SettingsPanelProvider,
-  SettingsPanel,
-  useSettingsPanel,
 } from "./settings-panel";
-import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "../../lib/utils";
 import { NavGroup, NavItem, SidebarData, SiteInfo, Team, ThemeConfig } from "../../types";
 import { ErrorBoundary } from "./error-boundary";
 import { validateTheme, applyThemeToDocument } from "../../lib/theme-utils";
 import { AppLayoutStateProvider, useAppLayoutState, useActiveTeam } from "../../lib/state";
-
-export interface MainContentProps {
-  children: React.ReactNode;
-  showSettingsPanel: boolean;
-  backgroundClassName: string;
-  settingsPanelContent?: React.ReactNode;
-}
-
-// MainContent is an internal component used by AppLayout
-// Memoize MainContent for performance
-const MainContent = React.memo(function MainContent({
-  children,
-  showSettingsPanel,
-  backgroundClassName,
-  settingsPanelContent,
-}: MainContentProps) {
-  const { state } = useSettingsPanel();
-  const isCollapsed = state === "collapsed";
-
-  return (
-    <div className={`flex h-[calc(100vh-4rem)] p-2 md:p-2 lg:p-2 md:rounded-s-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg transition-all ease-in-out duration-300 overflow-hidden`}>
-      <div className={cn(
-        `flex-1 w-full h-full md:rounded-s-[inherit] transition-all ease-in-out duration-300 overflow-hidden`,
-          showSettingsPanel && isCollapsed ? "min-[1024px]:rounded-e-lg" : "min-[1024px]:rounded-e-3xl",
-        backgroundClassName
-      )}>
-        <ScrollArea 
-          id="main-content-area" 
-          className="h-full w-full"
-        >
-          <div className="p-4">
-            {children}
-          </div>
-        </ScrollArea>
-      </div>
-      {showSettingsPanel && <SettingsPanel content={settingsPanelContent} />}
-    </div>
-  );
-});
+import { MainContent } from "./main-content";
 
 
 /**
@@ -154,6 +113,15 @@ export interface AppLayoutProps {
   
   /** Callback when the logo is clicked */
   onLogoClick?: () => void;
+  
+  /** Optional header title or custom component for the main content area */
+  contentHeader?: React.ReactNode;
+  
+  /** Whether to show the settings panel trigger in the main content header (defaults to true) */
+  showSettingsPanelTrigger?: boolean;
+  
+  /** Optional class name for the main content header */
+  contentHeaderClassName?: string;
 }
 
 export function AppLayout({
@@ -173,6 +141,9 @@ export function AppLayout({
   onNavItemClick,
   onLogoClick,
   theme,
+  contentHeader,
+  showSettingsPanelTrigger = true,
+  contentHeaderClassName,
 }: AppLayoutProps) {
   // Create data object for AppSidebar if custom nav items are provided
   const sidebarData: SidebarData | undefined = sidebarNavItems ? {
@@ -231,10 +202,12 @@ export function AppLayout({
     applyThemeVariables();
   }, [isMounted, applyThemeVariables]);
 
+  // Import focus-visible styles in the CSS file
+
   return (
     <div className="app-layout-ui">
       <ErrorBoundary>
-        <SidebarProvider>
+        <SidebarProvider mobileBreakpoint={mobileBreakpoint}>
           <ErrorBoundary fallback={
             <div className="w-64 bg-sidebar text-sidebar-foreground p-4">
               <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
@@ -287,6 +260,9 @@ export function AppLayout({
                   showSettingsPanel={showSettingsPanel}
                   backgroundClassName={backgroundClassName}
                   settingsPanelContent={settingsPanelContent}
+                  header={contentHeader}
+                  showSettingsPanelTrigger={showSettingsPanelTrigger}
+                  headerClassName={contentHeaderClassName}
                 >
                   <ErrorBoundary fallback={
                     <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">

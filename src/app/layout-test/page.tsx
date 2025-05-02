@@ -13,7 +13,7 @@ export default function NewLayoutTestPage() {
   // Define site info with logo and name
   const siteInfo = {
     name: "Next.js App",
-    logo: "/logo.svg",
+    logo: "https://picsum.photos/200",
     description: "Layout Test Page"
   };
 

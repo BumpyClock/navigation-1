@@ -235,3 +235,175 @@
 .slide-out-to-right-2 {
   animation-name: slideOutToRight;
 }
+
+/* Focus visibility styles - Global CSS approach */
+:root {
+  --focus-visible-ring-color: rgba(59, 130, 246, 0.85); /* Blue with transparency */
+  --focus-visible-ring-width: 3px;
+  --focus-shadow-color: rgba(59, 130, 246, 0.5); /* For the box shadow */
+}
+
+/* CRITICAL FOCUS STYLES FOR TAB NAVIGATION - KEYBOARD FOCUS */
+
+/* Very explicit focus styles for team switcher button */
+button.team-switcher-button:focus-visible,
+.team-switcher-button:focus-visible,
+[data-sidebar="menu-button"].team-switcher-button:focus-visible,
+.app-sidebar [data-sidebar="menu-button"].team-switcher-button:focus-visible,
+.app-sidebar button.team-switcher-button:focus-visible {
+  outline: 4px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.7) !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  border-radius: 0.25rem !important;
+  filter: brightness(1.3) !important;
+}
+
+/* Focus styles for sidebar section headers with maximum specificity */
+div[role="button"].sidebar-section-header:focus-visible,
+.sidebar-section-header:focus-visible,
+[data-sidebar="group-label"][role="button"]:focus-visible,
+.app-sidebar [data-sidebar="group-label"][role="button"]:focus-visible,
+.app-sidebar div[role="button"].sidebar-section-header:focus-visible {
+  outline: 4px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.7) !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  border-radius: 0.25rem !important;
+  filter: brightness(1.3) !important;
+}
+
+/* Very specific approach for sidebar menu buttons */
+a[role="menuitem"]:focus-visible,
+.app-sidebar a[role="menuitem"]:focus-visible,
+.app-sidebar .sidebar-nav-link:focus-visible,
+.app-sidebar .focus-link:focus-visible {
+  outline: 4px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.7) !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  border-radius: 0.25rem !important;
+  filter: brightness(1.3) !important;
+}
+
+/* First, configure styles for when focus is via mouse (remove outlines) */
+.app-layout-ui *:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-width: 0px !important;
+  --tw-ring-color: transparent !important;
+  border-color: transparent !important;
+  text-decoration: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Then, configure appropriate styles for keyboard navigation (:focus-visible) */
+.app-layout-ui *:focus-visible {
+  outline: var(--focus-visible-ring-width) solid var(--focus-visible-ring-color) !important;
+  outline-offset: 2px !important;
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+/* Enhanced focus styles for ALL interactive elements */
+.app-layout-ui [role="button"]:focus-visible,
+.app-layout-ui a:focus-visible,
+.app-layout-ui button:focus-visible,
+.app-layout-ui [tabindex="0"]:focus-visible,
+.app-layout-ui input:focus-visible,
+.app-layout-ui select:focus-visible,
+.app-layout-ui textarea:focus-visible {
+  outline: var(--focus-visible-ring-width) solid var(--focus-visible-ring-color) !important;
+  outline-offset: 2px !important;
+  z-index: 10 !important;
+  position: relative !important;
+  box-shadow: 0 0 0 3px var(--focus-visible-ring-color) !important;
+  border-radius: 0.25rem !important;
+}
+
+/* Extremely specific selector for app-sidebar elements */
+/* Target the anchor elements inside SidebarMenuButton when accessed via keyboard */
+.app-layout-ui a[role="menuitem"]:focus-visible,
+.app-layout-ui .app-sidebar a:focus-visible,
+.app-layout-ui [data-sidebar="menu-button"] a:focus-visible,
+.app-layout-ui [data-sidebar="menu-item"] a:focus-visible,
+.app-layout-ui a[aria-current]:focus-visible,
+.app-layout-ui .sidebar-nav-link:focus-visible,
+.app-layout-ui .group\/menu-item a:focus-visible {
+  outline: var(--focus-visible-ring-width) solid var(--focus-visible-ring-color) !important;
+  outline-offset: 2px !important;
+  z-index: 10 !important;
+  position: relative !important;
+  box-shadow: 0 0 0 3px var(--focus-visible-ring-color) !important;
+  border-radius: 0.25rem !important;
+}
+
+/* Target sidebar section header */
+.app-layout-ui [data-sidebar="group-label"][role="button"]:focus-visible,
+.app-layout-ui div[role="button"][aria-expanded]:focus-visible,
+.app-layout-ui .sidebar-section-header:focus-visible {
+  outline: var(--focus-visible-ring-width) solid var(--focus-visible-ring-color) !important;
+  outline-offset: 2px !important;
+  z-index: 10 !important;
+  position: relative !important;
+  box-shadow: 0 0 0 3px var(--focus-visible-ring-color) !important;
+  border-radius: 0.25rem !important;
+}
+
+/* Target logo and other sidebar-specific elements */
+.app-layout-ui div[data-sidebar="logo-button"]:focus-visible,
+.app-layout-ui .sidebar-logo:focus-visible,
+.app-layout-ui div[role="button"]:focus-visible,
+.app-layout-ui [data-sidebar="trigger"]:focus-visible {
+  outline: var(--focus-visible-ring-width) solid var(--focus-visible-ring-color) !important;
+  outline-offset: 2px !important;
+  z-index: 10 !important;
+  position: relative !important;
+  box-shadow: 0 0 0 3px var(--focus-visible-ring-color) !important;
+  border-radius: 0.25rem !important;
+  filter: brightness(1.1) !important; /* Slightly brighten the element when focused */
+}
+
+/* Additional specific styles for team switcher and section headers to ensure they always show focus */
+.app-layout-ui .team-switcher-button:focus-visible,
+.app-layout-ui [data-sidebar="group-label"][role="button"]:focus-visible,
+.app-layout-ui .sidebar-section-header:focus-visible,
+.app-layout-ui [data-sidebar="menu-button"]:focus-visible,
+.app-layout-ui button:focus-visible,
+.app-layout-ui a[role="menuitem"]:focus-visible {
+  outline: 4px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.7) !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  border-radius: 0.25rem !important;
+  filter: brightness(1.3) !important;
+}
+
+/* Hardcoded direct selectors for team switcher buttons - additional focus styles */
+.team-switcher-button:focus-visible,
+.sidebar-section-header:focus-visible,
+[data-sidebar="group-label"]:focus-visible {
+  outline: 4px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.7) !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  border-radius: 0.25rem !important;
+  filter: brightness(1.3) !important;
+}
+
+/* Last resort force focus styles on :focus (not just :focus-visible) for browsers that might not fully support :focus-visible */
+.app-sidebar .team-switcher-button:focus,
+.app-sidebar [data-sidebar="group-label"][role="button"]:focus,
+.app-sidebar a[role="menuitem"]:focus {
+  outline: 4px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.7) !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  border-radius: 0.25rem !important;
+}

@@ -54,8 +54,9 @@ export function SettingsPanelProvider({
   open: openProp,
   onOpenChange: setOpenProp,
   children,
-  mobileBreakpoint = 1024
+  mobileBreakpoint = 1024 // Allow customization of mobile breakpoint
 }: SettingsPanelProviderProps) {
+  // Use the provided mobile breakpoint
   const isMobile = useIsMobile(mobileBreakpoint);
   const [openMobile, setOpenMobile] = React.useState(false);
   
@@ -137,6 +138,8 @@ export function SettingsPanelContent({
   icon,
   content
 }: SettingsPanelContentProps) {
+  const { togglePanel } = useSettingsPanel();
+  
   return (
     <>
       {/* Panel header */}
@@ -151,7 +154,16 @@ export function SettingsPanelContent({
           )}
           <h2 className="text-sm font-medium">{title || "My preferences"}</h2>
         </div>
-        <SettingsPanelCollapseButton />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-7 w-7 rounded-full hover:bg-black/10"
+          onClick={togglePanel}
+          aria-label="Close panel"
+        >
+          <RiArrowLeftSLine size={18} />
+          <span className="sr-only">Close panel</span>
+        </Button>
       </div>
 
       {/* Panel content */}
@@ -213,6 +225,7 @@ export interface SettingsPanelProps {
 export function SettingsPanel({ content, className }: SettingsPanelProps) {
   const { isMobile, openMobile, setOpenMobile, open } = useSettingsPanel();
 
+  // Mobile breakpoint - use Sheet component
   if (isMobile) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
@@ -226,6 +239,7 @@ export function SettingsPanel({ content, className }: SettingsPanelProps) {
     );
   }
 
+  // Desktop breakpoint - use inline panel that shrinks main content
   return (
     <div className="relative flex h-full">
       <div 
@@ -243,7 +257,7 @@ export function SettingsPanel({ content, className }: SettingsPanelProps) {
           </ScrollArea>
         )}
       </div>
-      {!open && <SettingsPanelExpandButton />}
+      {/* Removed expand button since we're using the combined settings button + chevron */}
     </div>
   );
 }
@@ -280,16 +294,27 @@ export function SettingsPanelTrigger({
   className,
   ...props
 }: SettingsPanelTriggerProps) {
-  const { togglePanel } = useSettingsPanel();
+  const { togglePanel, state, isMobile, setOpenMobile } = useSettingsPanel();
+  const isExpanded = state === "expanded";
+
+  // Handle click differently for mobile and desktop
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onClick?.(event);
+    
+    if (isMobile) {
+      // For mobile, we need to set openMobile to true
+      setOpenMobile(true);
+    } else {
+      // For desktop, use the normal toggle
+      togglePanel();
+    }
+  };
 
   return (
     <Button
       variant="ghost"
-      className={cn("px-2", className)}
-      onClick={(event) => {
-        onClick?.(event);
-        togglePanel();
-      }}
+      className={cn("flex gap-1.5 items-center px-2", className)}
+      onClick={handleClick}
       {...props}
     >
       <RiSettingsLine
@@ -298,6 +323,21 @@ export function SettingsPanelTrigger({
         aria-hidden="true"
       />
       <span className="max-sm:sr-only">Settings</span>
+      
+      {/* Show chevron only in desktop view based on panel state */}
+      {!isMobile && (
+        isExpanded ? (
+          <RiArrowLeftSLine 
+            className="text-muted-foreground/70 size-4 -mr-1" 
+            aria-hidden="true"
+          />
+        ) : (
+          <RiArrowRightSLine 
+            className="text-muted-foreground/70 size-4 -mr-1" 
+            aria-hidden="true"
+          />
+        )
+      )}
     </Button>
   );
 }

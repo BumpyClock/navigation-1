@@ -3,6 +3,7 @@ export * from './app-layout-wrapper';
 export * from './app-sidebar';
 export * from './error-boundary';
 export * from './icon';
+export * from './main-content';
 export * from './performance-wrapper';
 export * from './settings-panel';
 export * from './sidebar-logo';

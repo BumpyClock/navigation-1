@@ -34,10 +34,8 @@ import {
 import { SidebarLogo } from "./sidebar-logo";
 import { SidebarSection } from "./sidebar-section";
 import { Icon } from "./icon";
-import { NavGroup, SidebarData, SiteInfo, Team } from "../../types";
+import { NavGroup, NavItem, SidebarData, SiteInfo, Team } from "../../types";
 
-// Define a proper type for RemixIcon components
-import type { IconNode } from "@remixicon/react";
 
 type IconMapType = Record<string, React.ComponentType<{
   className?: string;
@@ -155,6 +153,8 @@ export function AppSidebar({
               }}
               role="menuitem"
               aria-current={item.isActive ? "page" : undefined}
+              className="sidebar-nav-link focus-link"
+              tabIndex={0}
             >
               {IconComponent && (
                 <IconComponent
@@ -174,7 +174,7 @@ export function AppSidebar({
   return (
     <Sidebar 
       {...props} 
-      className="border-none! !dark:bg-secondary-background flex flex-col"
+      className="border-none! !dark:bg-secondary-background flex flex-col app-sidebar"
       role="navigation" 
       aria-label="Main navigation"
     >

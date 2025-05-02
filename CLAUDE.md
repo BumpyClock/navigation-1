@@ -7,10 +7,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm build` - Build the application for production
 - `pnpm start` - Start the production server
 - `pnpm lint` - Run ESLint to check for code issues
+- `pnpm test` - Run all tests (in app-layout-ui-new package)
+- `pnpm test:watch` - Run tests in watch mode
+- `pnpm test:coverage` - Run tests with coverage
+- `pnpm typecheck` - Run TypeScript type checking (in app-layout-ui-new package)
 
 ## Code Style Guidelines
 - **Imports**: Use absolute imports with `@/` alias for src directory
-- **Components**: Use function components with explicit return types
+- **Components**: Use function components with explicit return types 
 - **Styling**: Use Tailwind CSS with the `cn()` utility for class merging
 - **Types**: Strong typing with TypeScript; avoid `any` type
 - **Naming**: PascalCase for components, camelCase for variables/functions
@@ -25,3 +29,4 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Tailwind CSS for styling
 - TypeScript for type safety
 - Radix UI primitives with shadcn/ui components
+- Monorepo structure with main app and app-layout-ui-new package

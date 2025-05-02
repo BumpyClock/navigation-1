@@ -44,7 +44,15 @@ export function TeamSwitcher({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-3 [&>svg]:size-auto"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-3 [&>svg]:size-auto team-switcher-button"
+              role="combobox"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              tabIndex={0}
+              style={{
+                isolation: "isolate",
+                position: "relative"
+              }}
             >
               <div className="flex aspect-square size-9 items-center justify-center rounded-md overflow-hidden bg-sidebar-primary text-sidebar-primary-foreground relative after:rounded-[inherit] after:absolute after:inset-0 after:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] after:pointer-events-none">
                 {activeTeam && (
@@ -82,6 +90,9 @@ export function TeamSwitcher({
                 key={team.name}
                 onClick={() => handleTeamChange(team)}
                 className="gap-2 p-2"
+                tabIndex={0}
+                role="option"
+                aria-selected={team.name === activeTeam?.name}
               >
                 <div className="flex size-6 items-center justify-center rounded-md overflow-hidden">
                   <img
@@ -96,7 +107,7 @@ export function TeamSwitcher({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem className="gap-2 p-2" tabIndex={0}>
               <RiAddLine className="opacity-60" size={16} aria-hidden="true" />
               <div className="font-medium">Add team</div>
             </DropdownMenuItem>

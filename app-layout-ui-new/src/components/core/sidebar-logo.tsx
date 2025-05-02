@@ -56,30 +56,23 @@ export const SidebarLogo = React.memo(function SidebarLogo({
   className,
   onClick
 }: SidebarLogoProps) {
-  const [focusVisible, setFocusVisible] = React.useState(false);
-  
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (onClick && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
       onClick();
     }
   };
-  
-  const handleFocus = () => setFocusVisible(true);
-  const handleBlur = () => setFocusVisible(false);
 
   const logoContainerProps = onClick
     ? {
         role: "button",
         tabIndex: 0,
         onKeyDown: handleKeyDown,
-        onFocus: handleFocus,
-        onBlur: handleBlur,
         onClick,
         "aria-label": title ? `Go to ${title}` : "Go to homepage",
+        "data-sidebar": "logo-button",
         className: cn(
-          "flex items-center gap-3 px-3 py-4 cursor-pointer", 
-          focusVisible && "ring-2 ring-offset-1 ring-offset-background",
+          "flex items-center gap-3 px-3 py-4 cursor-pointer sidebar-logo", 
           className
         )
       }
