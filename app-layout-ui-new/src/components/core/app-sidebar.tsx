@@ -73,14 +73,24 @@ export function AppSidebar({
   // If no data is provided, render a basic sidebar with only children
   if (!data) {
     return (
-      <Sidebar {...props} className="border-none! !dark:bg-secondary-background">
+      <Sidebar 
+        {...props} 
+        className="border-none! !dark:bg-secondary-background"
+        role="navigation"
+        aria-label="Main navigation"
+      >
         {children}
       </Sidebar>
     );
   }
   
   return (
-    <Sidebar {...props} className="border-none! !dark:bg-secondary-background">
+    <Sidebar 
+      {...props} 
+      className="border-none! !dark:bg-secondary-background"
+      role="navigation" 
+      aria-label="Main navigation"
+    >
       <SidebarHeader>
         {data.teams && data.teams.length > 0 && (
           <TeamSwitcher 
@@ -105,7 +115,7 @@ export function AppSidebar({
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         asChild
-                        className="group/menu-button font-medium gap-3 h-9 rounded-md data-[active=true]:hover:bg-transparent data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto"
+                        className="group/menu-button font-medium gap-3 h-9 rounded-md data-[active=true]:hover:bg-transparent data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto"
                         isActive={item.isActive}
                       >
                         <a 
@@ -116,10 +126,12 @@ export function AppSidebar({
                               onNavItemClick(item as NavGroup);
                             }
                           }}
+                          role="menuitem"
+                          aria-current={item.isActive ? "page" : undefined}
                         >
                           {IconComponent && (
                             <IconComponent
-                              className="text-sidebar-foreground/50 group-data-[active=true]/menu-button:text-sidebar-foreground"
+                              className="text-sidebar-foreground/50 group-data-[active=true]/menu-button:text-sidebar-primary-icon"
                               size={22}
                               aria-hidden="true"
                             />
@@ -163,10 +175,12 @@ export function AppSidebar({
                               onNavItemClick(item as NavGroup);
                             }
                           }}
+                          role="menuitem"
+                          aria-current={item.isActive ? "page" : undefined}
                         >
                           {IconComponent && (
                             <IconComponent
-                              className="text-sidebar-foreground/50 group-data-[active=true]/menu-button:text-primary"
+                              className="text-sidebar-foreground/50 group-data-[active=true]/menu-button:text-sidebar-primary-icon"
                               size={22}
                               aria-hidden="true"
                             />

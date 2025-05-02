@@ -25,7 +25,8 @@ export interface MainContentProps {
 }
 
 // MainContent is an internal component used by AppLayout
-function MainContent({
+// Memoize MainContent for performance
+const MainContent = React.memo(function MainContent({
   children,
   showSettingsPanel,
   backgroundClassName,
@@ -53,7 +54,8 @@ function MainContent({
       {showSettingsPanel && <SettingsPanel content={settingsPanelContent} />}
     </div>
   );
-}
+});
+
 
 export interface AppLayoutProps {
   children: React.ReactNode;
@@ -80,7 +82,7 @@ export function AppLayout({
   showSettingsPanel = true,
   defaultSettingsPanelOpen = true,
   mainNavItems,
-  teams,
+  teams = [],
   sidebarNavItems,
   userDropdown,
   headerContent,
@@ -89,6 +91,7 @@ export function AppLayout({
   mobileBreakpoint = 1024,
   onTeamChange,
   onNavItemClick,
+  theme,
 }: AppLayoutProps) {
   // Create data object for AppSidebar if custom nav items are provided
   const sidebarData: SidebarData | undefined = sidebarNavItems ? {
@@ -114,46 +117,68 @@ export function AppLayout({
       const root = document.documentElement;
       
       // Apply theme if provided
-      // We could enhance this with more detailed themes in the future
+      if (theme) {
+        // Sidebar theme
+        if (theme.sidebar) {
+          theme.sidebar.background && root.style.setProperty('--sidebar-bg', theme.sidebar.background);
+          theme.sidebar.foreground && root.style.setProperty('--sidebar-fg', theme.sidebar.foreground);
+          theme.sidebar.accentBackground && root.style.setProperty('--sidebar-hover-bg', theme.sidebar.accentBackground);
+          theme.sidebar.accentForeground && root.style.setProperty('--sidebar-hover-fg', theme.sidebar.accentForeground);
+          theme.sidebar.primary && root.style.setProperty('--sidebar-primary', theme.sidebar.primary);
+          theme.sidebar.primaryForeground && root.style.setProperty('--sidebar-primary-fg', theme.sidebar.primaryForeground);
+          theme.sidebar.primaryForeground && root.style.setProperty('--sidebar-primary-icon', theme.sidebar.primaryForeground);
+        }
+        
+        // Content theme
+        if (theme.content) {
+          theme.content.background && root.style.setProperty('--content-bg', theme.content.background);
+          theme.content.foreground && root.style.setProperty('--content-fg', theme.content.foreground);
+          theme.content.darkBackground && root.style.setProperty('--content-dark-bg', theme.content.darkBackground);
+        }
+      }
+      
+      // Fallback for background class name
       if (backgroundClassName) {
         root.style.setProperty('--content-bg', 'var(--background, #ffffff)');
         root.style.setProperty('--content-dark-bg', 'var(--background-dark, #1e1e1e)');
       }
     }
-  }, [backgroundClassName]);
+  }, [backgroundClassName, theme]);
 
   return (
-    <SidebarProvider>
-      <AppSidebar 
-        data={sidebarData} 
-        onTeamChange={onTeamChange}
-        onNavItemClick={onNavItemClick}
-      />
-      <SidebarInset id="sidebar-inset" className="bg-sidebar group/sidebar-inset">
-        <header className="flex h-16 shrink-0 items-center gap-2 px-4 md:px-6 lg:px-8 bg-sidebar text-sidebar-foreground relative before:absolute before:inset-y-3 before:-left-px before:w-px before:bg-linear-to-b before:from-white/5 before:via-white/15 before:to-white/5 before:z-50">
-          <SidebarTrigger className="-ms-2" />
-          {headerContent ? (
-            headerContent
-          ) : (
-            <div className="flex items-center gap-8 ml-auto">
-              {mainNavItems && mainNavItems}
-              {userDropdown || <UserDropdown />}
-            </div>
-          )}
-        </header>
-        <SettingsPanelProvider 
-          defaultOpen={defaultSettingsPanelOpen} 
-          mobileBreaakpoint={mobileBreakpoint}
-        >
-          <MainContent 
-            showSettingsPanel={showSettingsPanel}
-            backgroundClassName={backgroundClassName}
-            settingsPanelContent={settingsPanelContent}
+    <div className="app-layout-ui">
+      <SidebarProvider>
+        <AppSidebar 
+          data={sidebarData} 
+          onTeamChange={onTeamChange}
+          onNavItemClick={onNavItemClick}
+        />
+        <SidebarInset id="sidebar-inset" className="bg-sidebar group/sidebar-inset" role="main">
+          <header className="flex h-16 shrink-0 items-center gap-2 px-4 md:px-6 lg:px-8 bg-sidebar text-sidebar-foreground relative before:absolute before:inset-y-3 before:-left-px before:w-px before:bg-linear-to-b before:from-white/5 before:via-white/15 before:to-white/5 before:z-50" role="banner">
+            <SidebarTrigger className="-ms-2" aria-label="Toggle sidebar" />
+            {headerContent ? (
+              headerContent
+            ) : (
+              <div className="flex items-center gap-8 ml-auto">
+                {mainNavItems && mainNavItems}
+                {userDropdown || <UserDropdown />}
+              </div>
+            )}
+          </header>
+          <SettingsPanelProvider 
+            defaultOpen={defaultSettingsPanelOpen} 
+            mobileBreaakpoint={mobileBreakpoint}
           >
-            {children}
-          </MainContent>
-        </SettingsPanelProvider>
-      </SidebarInset>
-    </SidebarProvider>
+            <MainContent 
+              showSettingsPanel={showSettingsPanel}
+              backgroundClassName={backgroundClassName}
+              settingsPanelContent={settingsPanelContent}
+            >
+              {children}
+            </MainContent>
+          </SettingsPanelProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }

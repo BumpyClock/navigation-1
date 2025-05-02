@@ -1,3 +1,6 @@
+// Import styles
+import './styles.css';
+
 // Core components
 export * from './components/core/app-layout';
 export * from './components/core/app-sidebar';

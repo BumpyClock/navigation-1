@@ -166,7 +166,8 @@ export function SettingsPanelContent({
 
 export interface SettingsPanelCollapseButtonProps extends React.ComponentProps<typeof Button> {}
 
-export function SettingsPanelCollapseButton({ className, ...props }: SettingsPanelCollapseButtonProps) {
+// Memoize button component for performance
+export const SettingsPanelCollapseButton = React.memo(function SettingsPanelCollapseButton({ className, ...props }: SettingsPanelCollapseButtonProps) {
   const { togglePanel } = useSettingsPanel();
   
   return (
@@ -175,17 +176,18 @@ export function SettingsPanelCollapseButton({ className, ...props }: SettingsPan
       size="icon" 
       className={cn("h-7 w-7 rounded-full hover:bg-black/10", className)}
       onClick={togglePanel}
+      aria-label="Collapse panel"
       {...props}
     >
       <RiArrowLeftSLine size={18} />
       <span className="sr-only">Collapse panel</span>
     </Button>
   );
-}
+});
 
 export interface SettingsPanelExpandButtonProps extends React.ComponentProps<typeof Button> {}
 
-export function SettingsPanelExpandButton({ className, ...props }: SettingsPanelExpandButtonProps) {
+export const SettingsPanelExpandButton = React.memo(function SettingsPanelExpandButton({ className, ...props }: SettingsPanelExpandButtonProps) {
   const { togglePanel } = useSettingsPanel();
   
   return (
@@ -194,13 +196,14 @@ export function SettingsPanelExpandButton({ className, ...props }: SettingsPanel
       size="icon" 
       className={cn("h-7 w-7 rounded-full hover:bg-black/10 absolute right-2 top-5 z-20 bg-gray-200/70 dark:bg-gray-700/70", className)}
       onClick={togglePanel}
+      aria-label="Expand panel"
       {...props}
     >
       <RiArrowRightSLine size={18} />
       <span className="sr-only">Expand panel</span>
     </Button>
   );
-}
+});
 
 export interface SettingsPanelProps {
   content?: React.ReactNode;
@@ -227,7 +230,7 @@ export function SettingsPanel({ content, className }: SettingsPanelProps) {
     <div className="relative flex h-full">
       <div 
         className={cn(
-          "transition-all duration-300 ease-in-out overflow-hidden bg-sidebar dark:bg-gray-800 h-full rounded-tr-3xl rounded-br-3xl",
+          "transition-all duration-300 ease-in-out overflow-hidden bg-sidebar h-full rounded-tr-3xl rounded-br-3xl",
           open ? "w-[300px]" : "w-0",
           className
         )}

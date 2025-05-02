@@ -7,7 +7,10 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "*.css"
+  ],
+  "style": "dist/styles.css",
   "files": [
     "dist/**"
   ],
@@ -55,5 +58,15 @@
     "tailwindcss-animate": "^1.0.7",
     "tsup": "^8.0.1",
     "typescript": "^5"
+  },
+  "tsup": {
+    "entry": ["src/index.tsx"],
+    "format": ["esm", "cjs"],
+    "dts": true,
+    "splitting": false,
+    "sourcemap": true,
+    "clean": true,
+    "external": ["react", "react-dom"],
+    "outDir": "dist"
   }
 }
