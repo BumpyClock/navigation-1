@@ -3,10 +3,21 @@
 import { AppLayout } from "app-layout-ui"; // In actual usage, this would be imported from the package
 
 export default function AppLayoutExample() {
+  // Define site info with logo and name
+  const siteInfo = {
+    name: "NextJS App",
+    logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345635/logo-01_upxvqe.png",
+    description: "Admin Dashboard"
+  };
+
   // Define custom teams for the sidebar
   const teams = [
     {
-      name: "Custom App",
+      name: "Engineering",
+      logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345635/logo-01_upxvqe.png",
+    },
+    {
+      name: "Marketing",
       logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345635/logo-01_upxvqe.png",
     },
   ];
@@ -37,6 +48,22 @@ export default function AppLayoutExample() {
           title: "Resources",
           url: "/resources",
           icon: "stack",
+        },
+      ],
+    },
+    secondary: {
+      title: "Settings",
+      url: "#",
+      items: [
+        {
+          title: "Account",
+          url: "/account",
+          icon: "settings",
+        },
+        {
+          title: "Help",
+          url: "/help",
+          icon: "chat",
         },
       ],
     },
@@ -94,11 +121,13 @@ export default function AppLayoutExample() {
     <AppLayout
       showSettingsPanel={true}
       defaultSettingsPanelOpen={true}
+      siteInfo={siteInfo}
       teams={teams}
       sidebarNavItems={sidebarNavItems}
       mainNavItems={mainNavItems}
       backgroundClassName="bg-white dark:bg-gray-950"
       settingsPanelContent={settingsPanelContent}
+      onLogoClick={() => console.log("Logo clicked")}
     >
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Dashboard</h1>

@@ -4,6 +4,13 @@ import { AppLayout } from 'app-layout-ui'; // In actual usage, this would be imp
 export default function AppLayoutExample() {
   const [darkMode, setDarkMode] = useState(false);
   
+  // Define site info with logo and name
+  const siteInfo = {
+    name: "Vite App",
+    logo: "https://vitejs.dev/logo.svg",
+    description: "Development Dashboard"
+  };
+  
   // Define custom teams for the sidebar
   const teams = [
     {
@@ -90,10 +97,12 @@ export default function AppLayoutExample() {
       <AppLayout
         showSettingsPanel={true}
         defaultSettingsPanelOpen={true}
+        siteInfo={siteInfo}
         teams={teams}
         sidebarNavItems={sidebarNavItems}
         backgroundClassName="bg-white dark:bg-gray-950"
         settingsPanelContent={settingsPanelContent}
+        onLogoClick={() => console.log("Logo clicked")}
       >
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-4">Vite + React Example</h1>

@@ -46,7 +46,7 @@ export interface SettingsPanelProviderProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   children: React.ReactNode;
-  mobileBreaakpoint?: number;
+  mobileBreakpoint?: number;
 }
 
 export function SettingsPanelProvider({ 
@@ -54,9 +54,9 @@ export function SettingsPanelProvider({
   open: openProp,
   onOpenChange: setOpenProp,
   children,
-  mobileBreaakpoint = 1024
+  mobileBreakpoint = 1024
 }: SettingsPanelProviderProps) {
-  const isMobile = useIsMobile(mobileBreaakpoint);
+  const isMobile = useIsMobile(mobileBreakpoint);
   const [openMobile, setOpenMobile] = React.useState(false);
   
   // This is the internal state of the panel

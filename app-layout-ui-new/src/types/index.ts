@@ -1,3 +1,11 @@
+// Site information type definition
+export type SiteInfo = {
+  name: string;
+  logo: string;
+  description?: string;
+  url?: string;
+};
+
 // Team type definition
 export type Team = {
   name: string;

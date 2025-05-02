@@ -4,11 +4,18 @@ A production-ready, customizable application layout component for React applicat
 
 ## Features
 
-- Responsive sidebar navigation
+- Responsive sidebar navigation with site branding
+- Modular sidebar layout with collapsible sections
+- Team switcher in the main navigation area
 - Settings panel with customizable content
-- Team switcher component
 - User dropdown menu
-- Dark/light mode support
+- Dark/light mode support with theme validation
+- State management with persistence
+- Performance monitoring and optimization
+- Error boundaries for graceful error handling
+- Enhanced keyboard navigation and accessibility
+- Server-side rendering support
+- Comprehensive documentation
 - Fully customizable via props
 - Built with Tailwind CSS and Radix UI
 
@@ -64,6 +71,21 @@ The package uses CSS variables for theming. You can override the default theme b
 import { AppLayout } from 'app-layout-ui';
 
 function MyApp() {
+  // Define site information
+  const siteInfo = {
+    name: "My Application",
+    logo: "/logo.png",
+    description: "Dashboard"
+  };
+
+  // Define custom teams
+  const teams = [
+    {
+      name: "Engineering",
+      logo: "/team-logo.png"
+    }
+  ];
+
   // Define custom navigation items
   const sidebarNavItems = {
     main: {
@@ -82,13 +104,27 @@ function MyApp() {
           icon: "computer",
         },
       ]
+    },
+    secondary: {
+      title: "Settings",
+      url: "#",
+      items: [
+        {
+          title: "Account",
+          url: "/account",
+          icon: "settings"
+        }
+      ]
     }
   };
 
   return (
     <AppLayout
+      siteInfo={siteInfo}
+      teams={teams}
       sidebarNavItems={sidebarNavItems}
       showSettingsPanel={true}
+      onLogoClick={() => console.log("Logo clicked")}
     >
       <div className="p-6">
         <h1>My Application Content</h1>
@@ -118,7 +154,106 @@ function MyApp() {
 | `mobileBreakpoint` | `number` | `1024` | Breakpoint for mobile view |
 | `onTeamChange` | `(team: Team) => void` | `undefined` | Callback when team is changed |
 | `onNavItemClick` | `(item: NavGroup \| NavItem) => void` | `undefined` | Callback when navigation item is clicked |
+| `onLogoClick` | `() => void` | `undefined` | Callback when the logo is clicked |
 | `theme` | `ThemeConfig` | `undefined` | Theme configuration object for custom styling |
+
+### Component API
+
+#### AppLayoutWithState
+
+A higher-order component that includes state management and performance monitoring:
+
+```jsx
+import { AppLayoutWithState } from 'app-layout-ui';
+
+function MyApp() {
+  return (
+    <AppLayoutWithState
+      siteInfo={siteInfo}
+      teams={teams}
+      sidebarNavItems={sidebarNavItems}
+    >
+      {/* Your content */}
+    </AppLayoutWithState>
+  );
+}
+```
+
+#### PerformanceComponent
+
+A utility component for monitoring performance of specific sections:
+
+```jsx
+import { PerformanceComponent } from 'app-layout-ui';
+
+function MyComponent() {
+  return (
+    <PerformanceComponent id="MyCustomComponent">
+      {/* Component content */}
+    </PerformanceComponent>
+  );
+}
+```
+
+#### ErrorBoundary
+
+A component for handling errors gracefully:
+
+```jsx
+import { ErrorBoundary } from 'app-layout-ui';
+
+function MyComponent() {
+  return (
+    <ErrorBoundary 
+      fallback={<div>Something went wrong</div>}
+      onError={(error) => console.error(error)}
+    >
+      {/* Component content */}
+    </ErrorBoundary>
+  );
+}
+```
+
+### Hook API
+
+The library provides several custom hooks for accessing the shared state:
+
+| Hook | Description |
+|------|-------------|
+| `useAppLayoutState()` | Access the complete layout state |
+| `useSidebarState()` | Control sidebar visibility |
+| `useSettingsPanelState()` | Control settings panel visibility |
+| `useThemeState()` | Access and modify theme settings |
+| `useActiveTeam()` | Get and set the active team |
+| `useComponentPerformance(id)` | Track component performance |
+
+Example usage:
+
+```jsx
+import { useSidebarState, useThemeState } from 'app-layout-ui';
+
+function MyComponent() {
+  const { isOpen, toggle } = useSidebarState();
+  const { theme, setTheme } = useThemeState();
+  
+  return (
+    <div>
+      <button onClick={toggle}>
+        {isOpen ? 'Close Sidebar' : 'Open Sidebar'}
+      </button>
+      
+      <select 
+        value={theme} 
+        onChange={(e) => setTheme(e.target.value)}
+      >
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="system">System</option>
+      </select>
+    </div>
+  );
+}
+```
 
 ### Theme Configuration
 
@@ -133,6 +268,7 @@ interface ThemeConfig {
     accentForeground?: string;
     primary?: string;
     primaryForeground?: string;
+    border?: string;
   };
   content?: {
     background?: string;
@@ -189,9 +325,69 @@ Tested and supported in:
 - Safari (latest)
 - Mobile browsers
 
+## Advanced Features
+
+### Error Handling
+
+The component includes built-in error boundaries that provide graceful error handling:
+
+- Isolates errors to specific sections of the UI
+- Prevents entire app crashes
+- Custom fallback UI for error states
+- Detailed error reporting
+
+### State Management
+
+The AppLayout includes a comprehensive state management system:
+
+- Persistent state across page refreshes
+- Global layout state accessible via hooks
+- Context-based state for sidebar, settings panel, and theme
+- Type-safe state with TypeScript
+
+```jsx
+// Using the state hooks
+import { 
+  useAppLayoutState, 
+  useSidebarState, 
+  useSettingsPanelState, 
+  useThemeState 
+} from 'app-layout-ui';
+
+function MyComponent() {
+  const { isOpen, toggle } = useSidebarState();
+  
+  return (
+    <button onClick={toggle}>
+      {isOpen ? 'Close Sidebar' : 'Open Sidebar'}
+    </button>
+  );
+}
+```
+
+### Performance Monitoring
+
+Built-in performance monitoring helps identify and fix performance issues:
+
+- Component render time tracking
+- Mount/update performance metrics
+- Integration with analytics platforms
+- Development tools for performance debugging
+
+### Server-Side Rendering
+
+Full support for server-side rendering (SSR) environments:
+
+- Next.js compatibility
+- Proper hydration handling
+- Safe browser detection
+- Lazy-loaded components where appropriate
+
 ## Documentation
 
-For detailed documentation, customization options, and examples, see the examples directory.
+For detailed API documentation, see [API.md](./API.md). 
+
+For examples and customization options, see the [examples directory](./examples).
 
 ## License
 

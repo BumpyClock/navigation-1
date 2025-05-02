@@ -1,0 +1,39 @@
+# Source files
+src/
+examples/
+
+# Config files
+tsconfig.json
+tailwind.config.js
+jest.config.js
+jest.setup.js
+.eslintrc.js
+
+# Tests
+__tests__/
+__mocks__/
+coverage/
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.sublime-*
+
+# Development and temporary files
+node_modules/
+.DS_Store
+*.log
+*.lock
+*.tgz
+.env*
+.cache/
+*.tmp
+
+# Git files
+.git/
+.gitignore
+
+# Documentation and examples that shouldn't be published
+docs/
+README.md
+IMPLEMENTATION_SUMMARY.md

@@ -15,7 +15,10 @@ import {
 } from "./settings-panel";
 import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "../../lib/utils";
-import { NavGroup, NavItem, SidebarData, Team, ThemeConfig } from "../../types";
+import { NavGroup, NavItem, SidebarData, SiteInfo, Team, ThemeConfig } from "../../types";
+import { ErrorBoundary } from "./error-boundary";
+import { validateTheme, applyThemeToDocument } from "../../lib/theme-utils";
+import { AppLayoutStateProvider, useAppLayoutState, useActiveTeam } from "../../lib/state";
 
 export interface MainContentProps {
   children: React.ReactNode;
@@ -36,7 +39,7 @@ const MainContent = React.memo(function MainContent({
   const isCollapsed = state === "collapsed";
 
   return (
-    <div className={`flex h-[calc(100svh-4rem)] md:rounded-s-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg transition-all ease-in-out duration-300 overflow-hidden h-full`}>
+    <div className={`flex h-[calc(100vh-4rem)] p-2 md:p-2 lg:p-2 md:rounded-s-3xl md:group-peer-data-[state=collapsed]/sidebar-inset:rounded-s-lg transition-all ease-in-out duration-300 overflow-hidden`}>
       <div className={cn(
         `flex-1 w-full h-full md:rounded-s-[inherit] transition-all ease-in-out duration-300 overflow-hidden`,
           showSettingsPanel && isCollapsed ? "min-[1024px]:rounded-e-lg" : "min-[1024px]:rounded-e-3xl",
@@ -44,9 +47,9 @@ const MainContent = React.memo(function MainContent({
       )}>
         <ScrollArea 
           id="main-content-area" 
-          className="flex-1 h-full"
+          className="h-full w-full"
         >
-          <div className="h-full">
+          <div className="p-4">
             {children}
           </div>
         </ScrollArea>
@@ -57,24 +60,100 @@ const MainContent = React.memo(function MainContent({
 });
 
 
+/**
+ * AppLayout component
+ * 
+ * The main layout component that provides the entire application structure including
+ * sidebar, header, main content area, and optional settings panel.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <AppLayout
+ *   siteInfo={{
+ *     name: "My Application",
+ *     logo: "/logo.svg",
+ *     description: "Admin Dashboard"
+ *   }}
+ *   sidebarNavItems={{
+ *     main: {
+ *       title: "Main Navigation",
+ *       items: [
+ *         { title: "Dashboard", icon: "home", url: "/" },
+ *         { title: "Settings", icon: "settings", url: "/settings" }
+ *       ]
+ *     }
+ *   }}
+ *   showSettingsPanel={true}
+ *   theme={{
+ *     sidebar: {
+ *       background: "#1a202c",
+ *       foreground: "#f7fafc"
+ *     }
+ *   }}
+ * >
+ *   <h1>Main Content Area</h1>
+ *   <p>Your app content goes here.</p>
+ * </AppLayout>
+ * ```
+ * 
+ * @accessibility
+ * - Uses semantic HTML elements (header, main)
+ * - Implements proper ARIA roles
+ * - Keyboard navigation support
+ * - Error boundaries for graceful error handling
+ */
 export interface AppLayoutProps {
+  /** The main content of the application */
   children: React.ReactNode;
+  
+  /** Whether to show the settings panel (defaults to true) */
   showSettingsPanel?: boolean;
+  
+  /** Whether the settings panel should be open by default (defaults to true) */
   defaultSettingsPanelOpen?: boolean;
+  
+  /** Custom navigation items to display in the main header */
   mainNavItems?: React.ReactNode;
+  
+  /** Site information (name, logo, description) */
+  siteInfo?: SiteInfo;
+  
+  /** Teams for the team switcher component */
   teams?: Team[];
+  
+  /** Navigation items for the sidebar */
   sidebarNavItems?: {
     main?: NavGroup;
     secondary?: NavGroup;
   };
+  
+  /** Custom user dropdown component (defaults to default UserDropdown) */
   userDropdown?: React.ReactNode;
+  
+  /** Custom header content (replaces default header) */
   headerContent?: React.ReactNode;
+  
+  /** CSS class name for the main content background (defaults to "bg-content dark:bg-content-dark") */
   backgroundClassName?: string;
+  
+  /** Content to display in the settings panel */
   settingsPanelContent?: React.ReactNode;
+  
+  /** Theme configuration for customizing colors */
   theme?: ThemeConfig;
+  
+  /** Breakpoint for mobile view in pixels (defaults to 1024) */
   mobileBreakpoint?: number;
+  
+  /** Callback when a team is selected in the team switcher */
   onTeamChange?: (team: Team) => void;
+  
+  /** Callback when a navigation item is clicked */
   onNavItemClick?: (item: NavGroup | NavItem) => void;
+  
+  /** Callback when the logo is clicked */
+  onLogoClick?: () => void;
 }
 
 export function AppLayout({
@@ -82,6 +161,7 @@ export function AppLayout({
   showSettingsPanel = true,
   defaultSettingsPanelOpen = true,
   mainNavItems,
+  siteInfo,
   teams = [],
   sidebarNavItems,
   userDropdown,
@@ -91,6 +171,7 @@ export function AppLayout({
   mobileBreakpoint = 1024,
   onTeamChange,
   onNavItemClick,
+  onLogoClick,
   theme,
 }: AppLayoutProps) {
   // Create data object for AppSidebar if custom nav items are provided
@@ -110,75 +191,123 @@ export function AppLayout({
     ],
   } : undefined;
 
-  // Create CSS variables for theme if provided
-  React.useEffect(() => {
-    // Set theme CSS variables
-    if (typeof document !== 'undefined') {
-      const root = document.documentElement;
-      
-      // Apply theme if provided
-      if (theme) {
-        // Sidebar theme
-        if (theme.sidebar) {
-          theme.sidebar.background && root.style.setProperty('--sidebar-bg', theme.sidebar.background);
-          theme.sidebar.foreground && root.style.setProperty('--sidebar-fg', theme.sidebar.foreground);
-          theme.sidebar.accentBackground && root.style.setProperty('--sidebar-hover-bg', theme.sidebar.accentBackground);
-          theme.sidebar.accentForeground && root.style.setProperty('--sidebar-hover-fg', theme.sidebar.accentForeground);
-          theme.sidebar.primary && root.style.setProperty('--sidebar-primary', theme.sidebar.primary);
-          theme.sidebar.primaryForeground && root.style.setProperty('--sidebar-primary-fg', theme.sidebar.primaryForeground);
-          theme.sidebar.primaryForeground && root.style.setProperty('--sidebar-primary-icon', theme.sidebar.primaryForeground);
-        }
-        
-        // Content theme
-        if (theme.content) {
-          theme.content.background && root.style.setProperty('--content-bg', theme.content.background);
-          theme.content.foreground && root.style.setProperty('--content-fg', theme.content.foreground);
-          theme.content.darkBackground && root.style.setProperty('--content-dark-bg', theme.content.darkBackground);
-        }
-      }
-      
-      // Fallback for background class name
-      if (backgroundClassName) {
-        root.style.setProperty('--content-bg', 'var(--background, #ffffff)');
-        root.style.setProperty('--content-dark-bg', 'var(--background-dark, #1e1e1e)');
-      }
+  /**
+   * Validate and memoize the theme
+   */
+  const validatedTheme = React.useMemo(() => {
+    // Detect if we should use dark theme as base (can be extended to detect system preference)
+    const shouldUseDarkTheme = false; // Could be connected to a theme context or OS preference
+    return validateTheme(theme, shouldUseDarkTheme);
+  }, [theme]);
+  
+  /**
+   * Function to apply theme CSS variables to the document root
+   * Uses the validated theme for better safety
+   */
+  const applyThemeVariables = React.useCallback(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    
+    // Apply the validated theme
+    applyThemeToDocument(validatedTheme);
+    
+    // Fallback for background class name
+    if (backgroundClassName) {
+      document.documentElement.style.setProperty('--content-bg', 'var(--background, #ffffff)');
+      document.documentElement.style.setProperty('--content-dark-bg', 'var(--background-dark, #1e1e1e)');
     }
-  }, [backgroundClassName, theme]);
+  }, [backgroundClassName, validatedTheme]);
+  
+  // Track if component is mounted to handle SSR properly
+  const [isMounted, setIsMounted] = React.useState(false);
+  
+  // Set mounted state on first render
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  // Apply theme variables once mounted and whenever theme changes
+  React.useEffect(() => {
+    if (!isMounted) return;
+    applyThemeVariables();
+  }, [isMounted, applyThemeVariables]);
 
   return (
     <div className="app-layout-ui">
-      <SidebarProvider>
-        <AppSidebar 
-          data={sidebarData} 
-          onTeamChange={onTeamChange}
-          onNavItemClick={onNavItemClick}
-        />
-        <SidebarInset id="sidebar-inset" className="bg-sidebar group/sidebar-inset" role="main">
-          <header className="flex h-16 shrink-0 items-center gap-2 px-4 md:px-6 lg:px-8 bg-sidebar text-sidebar-foreground relative before:absolute before:inset-y-3 before:-left-px before:w-px before:bg-linear-to-b before:from-white/5 before:via-white/15 before:to-white/5 before:z-50" role="banner">
-            <SidebarTrigger className="-ms-2" aria-label="Toggle sidebar" />
-            {headerContent ? (
-              headerContent
-            ) : (
-              <div className="flex items-center gap-8 ml-auto">
-                {mainNavItems && mainNavItems}
-                {userDropdown || <UserDropdown />}
+      <ErrorBoundary>
+        <SidebarProvider>
+          <ErrorBoundary fallback={
+            <div className="w-64 bg-sidebar text-sidebar-foreground p-4">
+              <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
+                <h2 className="text-lg font-semibold mb-2">Sidebar Error</h2>
+                <p>There was a problem loading the sidebar.</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded"
+                >
+                  Reload
+                </button>
               </div>
-            )}
-          </header>
-          <SettingsPanelProvider 
-            defaultOpen={defaultSettingsPanelOpen} 
-            mobileBreaakpoint={mobileBreakpoint}
-          >
-            <MainContent 
-              showSettingsPanel={showSettingsPanel}
-              backgroundClassName={backgroundClassName}
-              settingsPanelContent={settingsPanelContent}
+            </div>
+          }>
+            <AppSidebar 
+              data={sidebarData}
+              siteInfo={siteInfo}
+              onTeamChange={onTeamChange}
+              onNavItemClick={onNavItemClick}
+              onLogoClick={onLogoClick}
+            />
+          </ErrorBoundary>
+          <SidebarInset id="sidebar-inset" className="bg-sidebar group/sidebar-inset" role="main">
+            <ErrorBoundary fallback={
+              <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
+                <h2 className="text-lg font-semibold mb-2">Header Error</h2>
+                <p>There was a problem loading the header.</p>
+              </div>
+            }>
+              <header className="flex h-16 shrink-0 items-center gap-2 pl-2 pr-4 md:pr-6 md:pl-2 lg:pr-8 lg:pl-2 bg-sidebar text-sidebar-foreground relative before:absolute before:inset-y-3 before:-left-px before:w-px before:bg-linear-to-b before:from-white/5 before:via-white/15 before:to-white/5 before:z-50" role="banner">
+                <div className="group-data-[state=collapsed]/sidebar-inset:pl-4 group-data-[state=collapsed]/sidebar-inset:md:pl-6 group-data-[state=collapsed]/sidebar-inset:lg:pl-8 transition-all duration-300">
+                  <SidebarTrigger className="-ms-2" aria-label="Toggle sidebar" />
+                </div>
+                {headerContent ? (
+                  headerContent
+                ) : (
+                  <div className="flex items-center gap-8 ml-auto">
+                    {mainNavItems && mainNavItems}
+                    {userDropdown || <UserDropdown />}
+                  </div>
+                )}
+              </header>
+            </ErrorBoundary>
+            <SettingsPanelProvider 
+              defaultOpen={defaultSettingsPanelOpen} 
+              mobileBreakpoint={mobileBreakpoint}
             >
-              {children}
-            </MainContent>
-          </SettingsPanelProvider>
-        </SidebarInset>
-      </SidebarProvider>
+              <ErrorBoundary>
+                <MainContent 
+                  showSettingsPanel={showSettingsPanel}
+                  backgroundClassName={backgroundClassName}
+                  settingsPanelContent={settingsPanelContent}
+                >
+                  <ErrorBoundary fallback={
+                    <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
+                      <h2 className="text-lg font-semibold mb-2">Content Error</h2>
+                      <p>There was a problem loading the content.</p>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded"
+                      >
+                        Reload
+                      </button>
+                    </div>
+                  }>
+                    {children}
+                  </ErrorBoundary>
+                </MainContent>
+              </ErrorBoundary>
+            </SettingsPanelProvider>
+          </SidebarInset>
+        </SidebarProvider>
+      </ErrorBoundary>
     </div>
   );
 }
