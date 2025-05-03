@@ -90,7 +90,8 @@ function NavItemComponent({
   item: NavItem;
   iconMap: IconMapType;
   isSecondary?: boolean;
-  onNavItemClick?: (item: NavGroup) => void;
+  // Ensure NavGroup is also accepted here if needed, or adjust type in AppSidebarProps
+  onNavItemClick?: (item: NavItem) => void;
 }) {
   // Determine how to render the icon based on its type
   const renderIcon = () => {
@@ -156,8 +157,12 @@ function NavItemComponent({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (onNavItemClick) {
-      onNavItemClick(item as NavGroup);
+      // Pass the original item (NavItem) to the callback
+      onNavItemClick(item);
     } else if (item.url) {
+      // WARNING: Using window.location.href causes a full page reload.
+      // For SPAs (like Next.js), prefer using the onNavItemClick prop
+      // and handle navigation with the framework's router (e.g., next/link or useRouter).
       window.location.href = item.url;
     }
   };
@@ -194,7 +199,9 @@ export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   siteInfo?: SiteInfo;
   iconMap?: IconMapType;
   onTeamChange?: (team: Team) => void;
-  onNavItemClick?: (item: NavGroup) => void;
+  /** Callback when a navigation item is clicked */
+  // Updated type to specifically expect NavItem based on NavItemComponent usage
+  onNavItemClick?: (item: NavItem) => void;
   onLogoClick?: () => void;
 }
 

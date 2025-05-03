@@ -29,7 +29,8 @@ function Header({
 }) {
   return (
     <header 
-      className="flex h-16 shrink-0 items-center gap-2 pl-2 pr-4 md:pr-6 md:pl-2 lg:pr-8 lg:pl-2 bg-sidebar text-sidebar-foreground relative before:absolute before:inset-y-3 before:-left-px before:w-px before:bg-linear-to-b before:from-white/5 before:via-white/15 before:to-white/5 before:z-50" 
+      // Use theme variables for the pseudo-element background gradient
+      className="flex h-16 shrink-0 items-center gap-2 pl-2 pr-4 md:pr-6 md:pl-2 lg:pr-8 lg:pl-2 bg-sidebar text-sidebar-foreground relative before:absolute before:inset-y-3 before:-left-px before:w-px before:bg-gradient-to-b before:from-[var(--sidebar-fg,currentColor)]/5 before:via-[var(--sidebar-fg,currentColor)]/15 before:to-[var(--sidebar-fg,currentColor)]/5 before:z-50" 
       role="banner"
     >
       <div className="group-data-[state=collapsed]/sidebar-inset:pl-4 group-data-[state=collapsed]/sidebar-inset:md:pl-6 group-data-[state=collapsed]/sidebar-inset:lg:pl-8 transition-all duration-300">

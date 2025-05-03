@@ -38,7 +38,7 @@ export function MainContent({
     <div 
       className={cn(
         "flex-1 w-full h-full overflow-hidden",
-        "md:rounded-s-[inherit] md:rounded-e-[inherit]",
+        "md:rounded-s-3xl md:rounded-e-3xl",
         backgroundClassName
       )}
       style={{ width: '100%', flex: 1, height: 'calc(100vh - 4rem)' }}
